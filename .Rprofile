@@ -1,3 +1,7 @@
+######################################.
+### SNAP SRASA project - R Profile ###
+######################################.
+
 source("renv/activate.R")
 library(dplyr)
 library(docstring)
