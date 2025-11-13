@@ -2,11 +2,18 @@
 ### SNAP SRASA project - R Profile ###
 ######################################.
 
+# Source Renv
 source("renv/activate.R")
+
+# Load packages
 library(dplyr)
 library(docstring)
 library(tidyr)
+library(shiny)
+library(ggiraph)
 
+
+# Project screen
 cat("
 
  Welcome to the SNAP SRASA project!
