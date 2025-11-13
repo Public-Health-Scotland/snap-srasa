@@ -6,12 +6,31 @@
 source("renv/activate.R")
 
 # Load packages
-library(dplyr)
 library(docstring)
-library(tidyr)
 library(shiny)
 library(ggiraph)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(odbc) # required for connection to data
+library(tidyr)
+library(janitor)
+library(DT)
+library(arrow)
+library(XML)
+library(bslib)
+library(htmlwidgets)
+library(ggplot2)
+library(ggrepel)
+library(scales)
+library(fontawesome)
+library(shinymanager)
+library(glue)
+library(magrittr)
+library(forcats)
+library(purrr)
 
+library(phsverse)
 
 # Project screen
 cat("
