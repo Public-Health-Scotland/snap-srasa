@@ -5,12 +5,30 @@
 # Bex Madden & Dylan Lewis
 # 13/11/2025
 
-# add docstring
 
-function(start_date = "01-January-2023", 
-         end_date = Sys.Date() %>% 
-                    lubridate::floor_date("month") %m-% months(2) %>% 
-                    format("%d-%B-%Y")){
+extract_smr01_data <- function(start_date = "01-January-2023", 
+                               end_date = Sys.Date() %>% 
+                                 lubridate::floor_date("month") %m-% months(2) %>% 
+                                 format("%d-%B-%Y")){
+  
+  #' Monthly extract of SMR01 data for SRASA
+  #'
+  #' @description This function connects to SMR01 and extracts the desired 
+  #' variables for the date range specified. This function should be run at 
+  #' the start of each month to update the SRASA dataset.
+  #' 
+  #' @param start_date - format as 01-January-2023. Defaults to this date.
+  #' @param end_date - format as above. Defaults to 2 months before 1st of 
+  #' sys.date month e.g. if running on 14th November defaults to 1st September
+  #' 
+  #' @usage extract_smr01_data(start_date, end_date)
+  #'
+  #' @details Connects to SMR01; Extracts data according to start and end date 
+  #' inputs; Performs preliminary wrangling- splitting operation codes into 
+  #' 4-digit a & b codes, then filtering df to leave full records for patients
+  #' who have at some point had a candidate procedure. Resulting data needs to
+  #' be grouped by link_no to work within patient record or grouped by link_no
+  #' and cis_marker to work within each individual patient stay.
   
   
   ### Set up connection
@@ -76,13 +94,13 @@ function(start_date = "01-January-2023",
     rename(op_specialty = specialty)
   candidate_list <- dplyr::pull(candidate_codes, code)
   
-  approach_codes <- read_csv("../../../(12) Data/Lookups/approach_codes.csv")
-  approach_list <- dplyr::pull(approach_codes, approach_code)
-  
-  robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
-  minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
-  robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
-  minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
+  # approach_codes <- read_csv("../../../(12) Data/Lookups/approach_codes.csv") # move this to next function
+  # approach_list <- dplyr::pull(approach_codes, approach_code)
+  # 
+  # robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
+  # minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
+  # robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
+  # minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
   
   
   RAS_clean_data <- SMR01_data_extract %>% 
@@ -94,10 +112,10 @@ function(start_date = "01-January-2023",
     separate_wider_position(other_operation_3, c(op4a = 4, op4b = 4), too_few = "align_start") %>% 
 
     mutate(which_candidate1 = case_when(op1a %in% candidate_list ~ 1, #make column indicating position of candidate procedures
-                                       op2a %in% candidate_list ~ 2,
-                                       op3a %in% candidate_list ~ 3,
-                                       op4a %in% candidate_list ~ 4,
-                                       .default = NA_integer_),
+                                        op2a %in% candidate_list ~ 2,
+                                        op3a %in% candidate_list ~ 3,
+                                        op4a %in% candidate_list ~ 4,
+                                        .default = NA_integer_),
            which_candidate2 = case_when(
              which_candidate1 < 2 & op2a %in% candidate_list ~ 2,
              which_candidate1 < 3 & op3a %in% candidate_list ~ 3,
@@ -137,5 +155,6 @@ function(start_date = "01-January-2023",
   rm(SMR01_connect)
   gc()
   
-  
+  return(RAS_clean_data)
 }
+
