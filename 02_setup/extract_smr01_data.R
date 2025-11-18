@@ -6,10 +6,8 @@
 # 13/11/2025
 
 
-extract_smr01_data <- function(start_date = "01-January-2023", 
-                               end_date = Sys.Date() %>% 
-                                 lubridate::floor_date("month") %m-% months(2) %>% 
-                                 format("%d-%B-%Y")){
+extract_smr01_data <- function(start_date = "'01-January-2023'", 
+                               end_date = NULL){
   
   #' Monthly extract of SMR01 data for SRASA
   #'
@@ -17,7 +15,7 @@ extract_smr01_data <- function(start_date = "01-January-2023",
   #' variables for the date range specified. This function should be run at 
   #' the start of each month to update the SRASA dataset.
   #' 
-  #' @param start_date - format as 01-January-2023. Defaults to this date.
+  #' @param start_date - format as '01-January-2023' (including single quotes). Defaults to this date.
   #' @param end_date - format as above. Defaults to 2 months before 1st of 
   #' sys.date month e.g. if running on 14th November defaults to 1st September
   #' 
@@ -29,6 +27,14 @@ extract_smr01_data <- function(start_date = "01-January-2023",
   #' who have at some point had a candidate procedure. Resulting data needs to
   #' be grouped by link_no to work within patient record or grouped by link_no
   #' and cis_marker to work within each individual patient stay.
+  
+  ### Set default end date if none provided
+  
+  if(is.null(end_date)){
+    end_date <- Sys.Date() %>% 
+      lubridate::floor_date("month") %m-% months(2) %>% 
+      format("'%d-%B-%Y'")
+  }
   
   
   ### Set up connection
