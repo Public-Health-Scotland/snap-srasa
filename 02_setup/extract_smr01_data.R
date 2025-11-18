@@ -38,6 +38,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   
   
   ### Set up connection
+  cli_progress_step("Connecting to database...")
   SMR01_connect <-   dbConnect(odbc(),
                                dsn = "SMRA",
                                uid = Sys.getenv("USER"),
@@ -91,12 +92,14 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
                         DISCHARGE_DATE, ADMISSION, DISCHARGE, URI")
   
   ### Run query 
+  cli_progress_step("Fetching SMR-01 data from database...")
   SMR01_data_extract <- dbGetQuery(SMR01_connect,Query_SMR01) %>% 
     as_data_frame() %>% 
     clean_names()
-    
+
   ### Data wrangling
-  candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv") %>%  #not full list as appears on discovery site, list sent by craig
+  cli_progress_step("Preparing data extract...")
+  candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv", show_col_types = FALSE) %>%  #not full list as appears on discovery site, list sent by craig
     rename(op_specialty = specialty)
   candidate_list <- dplyr::pull(candidate_codes, code)
   
@@ -153,8 +156,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
                                             which_candidate2 == 3 ~ date_of_other_operation_2,
                                             which_candidate2 == 4 ~ date_of_other_operation_3,
                                             .default = NA_Date_)) 
-  
-  
+
   
   ### Disconnect and clean environment
   dbDisconnect(SMR01_connect)
