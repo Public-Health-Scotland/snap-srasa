@@ -39,14 +39,14 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   
   ### Set up connection
   cli_progress_step("Connecting to database...")
-  SMR01_connect <-   dbConnect(odbc(),
+  smr01_connect <-   dbConnect(odbc(),
                                dsn = "SMRA",
                                uid = Sys.getenv("USER"),
                                pwd = .rs.askForPassword(
                                  "SMRA Password: "))
   
   ### Set up query 
-  Query_SMR01 <- paste0("SELECT 
+  query_smr01 <- paste0("SELECT 
                       CI_CHI_NUMBER, 
                       UPI_NUMBER, 
                       PATIENT_IDENTIFIER, 
@@ -93,7 +93,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   
   ### Run query 
   cli_progress_step("Fetching SMR-01 data from database...")
-  SMR01_data_extract <- dbGetQuery(SMR01_connect,Query_SMR01) %>% 
+  smr01_data_extract <- dbGetQuery(smr01_connect, query_smr01) %>% 
     as_data_frame() %>% 
     clean_names()
 
@@ -112,7 +112,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   # minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
   
   
-  RAS_clean_data <- SMR01_data_extract %>% 
+  ras_clean_data <- smr01_data_extract %>% 
     
     # split procedure codes by a and b position
     separate_wider_position(main_operation, c(op1a = 4, op1b = 4), too_few = "align_start")  %>% # always 4 digit codes?
@@ -159,10 +159,10 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
 
   
   ### Disconnect and clean environment
-  dbDisconnect(SMR01_connect)
-  rm(SMR01_connect)
+  dbDisconnect(smr01_connect)
+  rm(smr01_connect)
   gc()
   
-  return(RAS_clean_data)
+  return(ras_clean_data)
 }
 
