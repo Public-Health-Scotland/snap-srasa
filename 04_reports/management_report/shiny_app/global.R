@@ -28,8 +28,9 @@ library(purrr)
 library(arrow)
 
 ### Set directories ------------------------------------------------------------
-data_dir <- "../../../../../../(6) Testing/Bex_testing/" # temporary location
-report_dir <- "../../../../../../(4) Project Reports/Monthly Reports/Management Report/"
+data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
+report_dir <- "../../../../../../(04) Project Reports/Monthly Reports/Management Report/"
+lookup_dir <- "../../../../../../(12) Data/Lookups/"
 #text_dir <- "./"
 
 ### Utility functions ----------------------------------------------------------

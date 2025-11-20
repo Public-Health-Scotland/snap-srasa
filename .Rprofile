@@ -30,8 +30,22 @@ library(magrittr)
 library(forcats)
 library(purrr)
 library(readr)
+library(ggalluvial)
 
 library(phsverse)
+
+# Set constants
+candidate_codes <- read_csv("../../(12) Data/Lookups/ras_procedure_codes.csv") %>%  #move all this to r profile
+  rename(op_specialty = specialty)
+candidate_list <- dplyr::pull(candidate_codes, code)
+
+approach_codes <- read_csv("../../(12) Data/Lookups/approach_codes.csv") 
+approach_list <- dplyr::pull(approach_codes, approach_code)
+
+robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
+minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
+robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
+minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
 
 # Project screen
 cat("
