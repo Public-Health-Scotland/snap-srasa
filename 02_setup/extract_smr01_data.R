@@ -6,10 +6,8 @@
 # 13/11/2025
 
 
-extract_smr01_data <- function(start_date = "01-January-2023", 
-                               end_date = Sys.Date() %>% 
-                                 lubridate::floor_date("month") %m-% months(2) %>% 
-                                 format("%d-%B-%Y")){
+extract_smr01_data <- function(start_date = "'01-January-2023'", 
+                               end_date = NULL){
   
   #' Monthly extract of SMR01 data for SRASA
   #'
@@ -17,7 +15,7 @@ extract_smr01_data <- function(start_date = "01-January-2023",
   #' variables for the date range specified. This function should be run at 
   #' the start of each month to update the SRASA dataset.
   #' 
-  #' @param start_date - format as 01-January-2023. Defaults to this date.
+  #' @param start_date - format as '01-January-2023' (including single quotes). Defaults to this date.
   #' @param end_date - format as above. Defaults to 2 months before 1st of 
   #' sys.date month e.g. if running on 14th November defaults to 1st September
   #' 
@@ -30,8 +28,17 @@ extract_smr01_data <- function(start_date = "01-January-2023",
   #' be grouped by link_no to work within patient record or grouped by link_no
   #' and cis_marker to work within each individual patient stay.
   
+  ### Set default end date if none provided
+  
+  if(is.null(end_date)){
+    end_date <- Sys.Date() %>% 
+      lubridate::floor_date("month") %m-% months(2) %>% 
+      format("'%d-%B-%Y'")
+  }
+  
   
   ### Set up connection
+  cli_progress_step("Connecting to database...")
   smr01_connect <-   dbConnect(odbc(),
                                dsn = "SMRA",
                                uid = Sys.getenv("USER"),
@@ -85,12 +92,14 @@ extract_smr01_data <- function(start_date = "01-January-2023",
                         DISCHARGE_DATE, ADMISSION, DISCHARGE, URI")
   
   ### Run query 
+  cli_progress_step("Fetching SMR-01 data from database...")
   smr01_data_extract <- dbGetQuery(smr01_connect, query_smr01) %>% 
     as_data_frame() %>% 
     clean_names()
-    
+
   ### Data wrangling
-  candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv") %>%  #not full list as appears on discovery site, list sent by craig
+  cli_progress_step("Preparing data extract...")
+  candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv", show_col_types = FALSE) %>%  #not full list as appears on discovery site, list sent by craig
     rename(op_specialty = specialty)
   candidate_list <- dplyr::pull(candidate_codes, code)
   
@@ -147,8 +156,7 @@ extract_smr01_data <- function(start_date = "01-January-2023",
                                             which_candidate2 == 3 ~ date_of_other_operation_2,
                                             which_candidate2 == 4 ~ date_of_other_operation_3,
                                             .default = NA_Date_)) 
-  
-  
+
   
   ### Disconnect and clean environment
   dbDisconnect(smr01_connect)
