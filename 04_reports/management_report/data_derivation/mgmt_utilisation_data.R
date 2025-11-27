@@ -116,11 +116,11 @@ ppd <- all_ras_procs %>%
   group_by(hospital_name, proc_mth_yr) %>% 
   summarise(mean_procs_pd = round(mean(n), 2))
 
-### Specialty of surgeries by month ---------------------------------------------
+### Specialty of surgeries number by month -------------------------------------
 pps <- all_ras_procs %>% 
   mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m")) %>% 
   group_by(proc_mth_yr, specialty_desc, hospital_name) %>% 
   summarise(n = n())
   
-  
+### Sessions per day by specialty?
 
