@@ -2,6 +2,7 @@
 ### SNAP SRASA project - R Profile ###
 ######################################.
 
+setwd("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa")
 # Source Renv
 source("renv/activate.R")
 
@@ -72,6 +73,10 @@ conflict_prefer('last', 'dplyr')
 lookup_dir <- "../../../(12) Data/Lookups/"
 data_dir <- "../../../(12) Data/Monthly extract/"
 
+# Function
+list.files("./02_setup/", full.names = TRUE) %>% 
+  walk(source)
+
 # Project screen
 cat("
 
@@ -91,4 +96,5 @@ cat("
                 |___||___|   
                
 ")
+
 
