@@ -14,7 +14,7 @@ extract_smr01_data() %>%
   append_lookups() %>% 
   
   # save extract
-  write_parquet(paste0("../../../(12) Data/Monthly extract/srasa_smr_extract_", 
+  write_parquet(paste0(data_dir, "srasa_smr_extract_", 
                        format(Sys.Date(), "%Y-%m"), ".parquet"))
 
 ### ----------------------------------------------------------------------------

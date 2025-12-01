@@ -29,13 +29,15 @@ library(purrr)
 library(arrow)
 
 ### Set directories ------------------------------------------------------------
-data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
-report_dir <- "../../../../../../(04) Project Reports/Monthly Reports/Management Report/"
-lookup_dir <- "../../../../../../(12) Data/Lookups/"
+mgmt_data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
+mgmt_report_dir <- "../../../../../../(04) Project Reports/Monthly Reports/Management Report/"
+mgmt_lookup_dir <- "../../../../../../(12) Data/Lookups/"
 #text_dir <- "./"
 
 ### Utility functions ----------------------------------------------------------
-latest_year <- 2024
+latest_year <- Sys.Date() %>% 
+  lubridate::floor_date("year") %m-% years(1) %>% 
+  format("%Y") # The last full calendar year (prev year to present)
 
 ### Read in data ---------------------------------------------------------------
 
