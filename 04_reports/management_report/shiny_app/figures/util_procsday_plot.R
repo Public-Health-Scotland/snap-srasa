@@ -12,6 +12,10 @@
 util_procsday_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    selectInput(ns("month"),
+                label = "Month",
+                choices = unique(util_procsday$proc_mth_yr),
+                selected = paste0(latest_year, "-01")),
     withSpinner(girafeOutput(ns("util_procsday"),height=450))
   )
 }
@@ -25,14 +29,16 @@ util_procsday_server <- function(id) {
       output$util_procsday <- renderGirafe({
         
         chart_data <- util_procsday %>% 
-        filter(op_year == latest_year) # add filter by hospital location
+        filter(op_year == latest_year,
+               proc_mth_yr == input$month,
+               hospital_name != "Other Hospital Listed")
         
         util_procsday_plot <- ggplot(data = chart_data, 
-                                     aes(x = proc_mth_yr, y = mean_procs_pd, fill = hospital_name,
+                                     aes(x = dow, y = mean_procs_pd, fill = hospital_name,
                                          tooltip = paste0("Hospital Location: ", hospital_name,
-                                                          "\n Mean no. RAS procedures/day: ", mean_procs_pd,
+                                                          "\n Mean no. RAS procedures on ", dow,"s: ", mean_procs_pd,
                                                           "\n Month: ", proc_mth_yr),
-                                         data_id = proc_mth_yr)) +
+                                         data_id = dow)) +
           geom_bar_interactive(stat = "identity")+
           labs(x = "Month", 
                y = "Mean no. RAS procedures per day", 
