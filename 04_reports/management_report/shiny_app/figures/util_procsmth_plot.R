@@ -38,7 +38,7 @@ util_procsmth_server <- function(id) {
              y = "Number of cases", 
              caption = "Data from SMR01",
              subtitle = paste0())+ 
-          facet_wrap(.~ health_board) +
+          #facet_wrap(.~ health_board) +
           theme_minimal() +
           theme(legend.position = 'none') 
       

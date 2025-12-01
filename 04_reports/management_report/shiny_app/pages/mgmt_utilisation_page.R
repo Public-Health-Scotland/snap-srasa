@@ -22,7 +22,7 @@ p_utilisation <- nav_panel(
   
   card(full_screen = TRUE,
        card_header(paste0("Figure X: Mean no. RAS procedures performed per
-                          active day, by hospital (", latest_year, ")")),
+                          day, by hospital (", latest_year, ")")),
        
        util_procsday_ui("util_procsday"))
 )
