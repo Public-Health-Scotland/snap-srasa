@@ -54,7 +54,7 @@ ras_clean_data <- ras_clean_data %>%
 specialty_lookup <- read.csv("../../../(12) Data/Lookups/smr01_specialty_lookup.csv") %>% 
   rename(specialty_desc = Value)
 hosp_lookup <- read.csv("../../../(12) Data/Lookups/NHSScotland_hospitals.csv") %>% 
-  select(hospital_code, hospital_name)
+  select(hospital_code, hospital_name, health_board)
 
 all_ras_procs <- ras_clean_data %>% 
   ungroup() %>% 
@@ -103,24 +103,31 @@ ut_data <- all_ras_procs %>% #only counting each stay once? or should we count e
 
 ### Number of robotics procedures per month by hospital location ---------------
 ppm <- all_ras_procs %>% 
-  mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m")) %>% 
-  group_by(hospital_name, proc_mth_yr) %>% 
+  mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m"),
+         op_year = format(as.Date(date_of_main_operation, format="%d/%m/%Y"),"%Y")) %>% 
+  group_by(hospital_name, proc_mth_yr, op_year, health_board) %>% 
   summarise(n = n()) 
+
+write_parquet(ppm, paste0(data_dir, "mgmt_data/util_procsmth.parquet"))
 
 ### Mean daily number of robotics procedures per month -------------------------
 ppd <- all_ras_procs %>% 
-  mutate(proc_date = format(as.Date(date_of_main_operation), "%Y-%m-%d"),
-         proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m")) %>%
-  group_by(hospital_name, proc_mth_yr, proc_date) %>% 
+  mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m"),
+         op_year = format(as.Date(date_of_main_operation, format="%d/%m/%Y"),"%Y")) %>%
+  group_by(hospital_name, proc_mth_yr, date_of_main_operation, op_year) %>% #need a fill to capture all days?
   summarise(n = n()) %>% 
-  group_by(hospital_name, proc_mth_yr) %>% 
+  group_by(hospital_name, proc_mth_yr, op_year) %>% 
   summarise(mean_procs_pd = round(mean(n), 2))
+
+write_parquet(ppd, paste0(data_dir, "mgmt_data/util_procsday.parquet"))
 
 ### Specialty of surgeries number by month -------------------------------------
 pps <- all_ras_procs %>% 
   mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m")) %>% 
   group_by(proc_mth_yr, specialty_desc, hospital_name) %>% 
   summarise(n = n())
-  
+
+write_parquet(pps, paste0(data_dir, "mgmt_data/util_procspec.parquet"))
+
 ### Sessions per day by specialty?
 

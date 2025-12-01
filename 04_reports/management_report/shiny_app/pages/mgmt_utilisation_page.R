@@ -12,5 +12,17 @@ p_utilisation <- nav_panel(
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_utilisation",
-  h1("Utilisation")
+  h1("Utilisation"),
+  
+  card(full_screen = TRUE,
+       card_header(paste0("Figure X: Total number of RAS procedures monthly by 
+                          hospital (", latest_year, ")")),
+       
+       util_procsmth_ui("util_procsmth")),
+  
+  card(full_screen = TRUE,
+       card_header(paste0("Figure X: Mean no. RAS procedures performed per
+                          active day, by hospital (", latest_year, ")")),
+       
+       util_procsday_ui("util_procsday"))
 )

@@ -14,7 +14,7 @@ ui <- page_navbar(
   nav_panel(title = "Introduction", p_introduction),
   nav_panel(title = "Utilisation", p_utilisation),
   nav_panel(title = "Equity", p_equity),
-  nav_panel(title = "Outcome", p_outcome)
+  #nav_panel(title = "Outcome", p_outcome)
   # 
   # navset_pill_list(
   # 

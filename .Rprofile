@@ -25,6 +25,7 @@ library(ggrepel)
 library(scales)
 library(fontawesome)
 library(shinymanager)
+library(shinycssloaders)
 library(glue)
 library(magrittr)
 library(forcats)
@@ -35,6 +36,7 @@ library(cli)
 library(conflicted)
 
 library(phsverse)
+library(phslookups)
 
 # Set constants
 candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv") %>%  #move all this to r profile
@@ -64,6 +66,11 @@ conflict_prefer('lag','dplyr')
 conflict_prefer('lead','dplyr')
 conflict_prefer('first','dplyr')
 conflict_prefer('last', 'dplyr')
+
+
+# Directories
+lookup_dir <- "../../../(12) Data/Lookups/"
+data_dir <- "../../../(12) Data/Monthly extract/"
 
 # Project screen
 cat("

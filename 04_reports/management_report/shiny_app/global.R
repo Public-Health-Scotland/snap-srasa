@@ -21,6 +21,7 @@ library(scales)
 library(fontawesome)
 library(tidyr)
 library(shinymanager)
+library(shinycssloaders)
 library(glue)
 library(magrittr)
 library(forcats)
@@ -39,7 +40,10 @@ latest_year <- 2024
 ### Read in data ---------------------------------------------------------------
 
 #### Utilisation data ----
-
+util_procsmth <- read_parquet(paste0(data_dir, "mgmt_data/util_procsmth.parquet"))
+util_procsday <- read_parquet(paste0(data_dir, "mgmt_data/util_procsday.parquet"))
+util_procspec <- read_parquet(paste0(data_dir, "mgmt_data/util_procspec.parquet"))
+  
 #### Equity data ----
 equity_agesex <- read_parquet(paste0(data_dir, "mgmt_data/equity_agesex.parquet"))
 equity_simd <- read_parquet(paste0(data_dir, "mgmt_data/equity_simd.parquet"))
