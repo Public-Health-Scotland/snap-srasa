@@ -11,6 +11,8 @@ server <- function(input, output, session) {
   # Introduction page
   
   # Utilisation page
+  util_procsmth_server("util_procsmth")
+  util_procsday_server("util_procsday")
 
   #Equity page
   equity_agesex_server("equity_agesex")
