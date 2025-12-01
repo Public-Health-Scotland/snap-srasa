@@ -9,7 +9,7 @@
 # SRASA management report
 
 ### Read in raw data from SMR01, no filtering for procedure --------------------
-ras_clean_data <- read_parquet(paste0(data_dir, "srasa_smr_extract_2025-12.parquet")) %>%
+ras_clean_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_2025-12.parquet")) %>%
   subset_smr01_extract(filter_to = "cis")
   
 # source("./02_setup/extract_smr01_data.R")
@@ -53,19 +53,21 @@ ppm <- all_ras_procs %>%
   group_by(hospital_name, proc_mth_yr, op_year) %>% 
   summarise(n = n()) 
 
-write_parquet(ppm, paste0("../../../(06) Testing/Bex_testing/",  "mgmt_data/util_procsmth.parquet"))
+write_parquet(ppm, paste0(data_dir,  "management_report/util_procsmth.parquet"))
 
 ### Mean daily number of robotics procedures by day per month ------------------
 ppd <- all_ras_procs %>% 
   mutate(proc_mth_yr = format(as.Date(date_of_main_operation), "%Y-%m"),
          op_year = format(as.Date(date_of_main_operation, format="%d/%m/%Y"),"%Y"),
-         dow = factor(format(as.Date(date_of_main_operation, format="%d/%m/%Y"),"%A"))) %>%
+         dow = factor(format(as.Date(date_of_main_operation, format="%d/%m/%Y"),"%A"),
+                      levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+         ) %>%
   group_by(hospital_name, proc_mth_yr, date_of_main_operation, op_year, dow, .drop = FALSE) %>% #need a fill to capture all days?
   summarise(n = n()) %>% 
   group_by(hospital_name, proc_mth_yr, op_year, dow, .drop = FALSE) %>% 
   summarise(mean_procs_pd = round(mean(n), 2))
 
-write_parquet(ppd, paste0("../../../(06) Testing/Bex_testing/", "mgmt_data/util_procsday.parquet"))
+write_parquet(ppd, paste0(data_dir, "management_report/util_procsday.parquet"))
 
 ### Specialty of surgeries number by month -------------------------------------
 pps <- all_ras_procs %>% 
@@ -73,7 +75,7 @@ pps <- all_ras_procs %>%
   group_by(proc_mth_yr, specialty_desc, hospital_name) %>% 
   summarise(n = n())
 
-write_parquet(pps, paste0("../../../(06) Testing/Bex_testing/", "mgmt_data/util_procspec.parquet"))
+write_parquet(pps, paste0(data_dir, "management_report/util_procspec.parquet"))
 
 ### Sessions per day by specialty?
 

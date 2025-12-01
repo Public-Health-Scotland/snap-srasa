@@ -29,9 +29,10 @@ library(purrr)
 library(arrow)
 
 ### Set directories ------------------------------------------------------------
-mgmt_data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
-mgmt_report_dir <- "../../../../../../(04) Project Reports/Monthly Reports/Management Report/"
-mgmt_lookup_dir <- "../../../../../../(12) Data/Lookups/"
+bex_data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
+mgmt_report_dir <- "../../../../../../(04) Project Reports/Monthly Reports/"
+mgmt_lookup_dir <- "../../../../../../(12) Data/lookups/"
+mgmt_data_dir <- "../../../../../../(12) Data/management_report/"
 #text_dir <- "./"
 
 ### Utility functions ----------------------------------------------------------
@@ -42,15 +43,15 @@ latest_year <- Sys.Date() %>%
 ### Read in data ---------------------------------------------------------------
 
 #### Utilisation data ----
-util_procsmth <- read_parquet(paste0(data_dir, "mgmt_data/util_procsmth.parquet"))
-util_procsday <- read_parquet(paste0(data_dir, "mgmt_data/util_procsday.parquet"))
-util_procspec <- read_parquet(paste0(data_dir, "mgmt_data/util_procspec.parquet"))
+util_procsmth <- read_parquet(paste0(mgmt_data_dir, "util_procsmth.parquet"))
+util_procsday <- read_parquet(paste0(mgmt_data_dir, "util_procsday.parquet"))
+util_procspec <- read_parquet(paste0(mgmt_data_dir, "util_procspec.parquet"))
   
 #### Equity data ----
-equity_agesex <- read_parquet(paste0(data_dir, "mgmt_data/equity_agesex.parquet"))
-equity_simd <- read_parquet(paste0(data_dir, "mgmt_data/equity_simd.parquet"))
-equity_urbrural <- read_parquet(paste0(data_dir, "mgmt_data/equity_urbrural.parquet"))
-equity_pemc <- read_parquet(paste0(data_dir, "mgmt_data/equity_pemc.parquet"))
+equity_agesex <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_agesex.parquet"))
+equity_simd <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_simd.parquet"))
+equity_urbrural <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_urbrural.parquet"))
+equity_pemc <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_pemc.parquet"))
 
 #### Outcome data ----
 

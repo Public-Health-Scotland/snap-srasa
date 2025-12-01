@@ -70,8 +70,8 @@ conflict_prefer('last', 'dplyr')
 
 
 # Directories
-lookup_dir <- "../../../(12) Data/Lookups/"
-data_dir <- "../../../(12) Data/Monthly extract/"
+lookup_dir <- "../../../(12) Data/lookups/"
+data_dir <- "../../../(12) Data/"
 
 # Function
 list.files("./02_setup/", full.names = TRUE) %>% 
