@@ -27,9 +27,10 @@ subset_smr01_extract <- function(df, filter_to = c("cis", "patient")){
   }
   
   ### group by selected variables and filter df --------------------------------
-  ras_filtered_data <- df %>% 
+  ras_filtered_data <- df %>%
     group_by(pick(all_of(filter_terms))) %>% 
-    filter(any(ras_proc == TRUE))
+    filter(any(ras_proc == TRUE)) %>% 
+    ungroup()
   
   return(ras_filtered_data)
 }
