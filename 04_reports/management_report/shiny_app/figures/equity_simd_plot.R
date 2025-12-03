@@ -24,8 +24,8 @@ equity_simd_server <- function(id) {
     function(input, output, session) {
       output$equity_simd <- renderGirafe({
         
-        chart_data <- equity_simd %>% 
-          filter(op_year == latest_year) 
+        chart_data <- equity_simd# %>% 
+          #filter(op_year == latest_year) 
         
         equity_simd_plot <- ggplot(data = chart_data, 
                                    aes(x = simd_quintile, y = app_prop, fill = approach_binary,
@@ -38,7 +38,7 @@ equity_simd_server <- function(id) {
                y = "", 
                fill = "Surgical Approach",
                caption = "Data from SMR01",
-               subtitle = paste0(latest_year))+ 
+               subtitle = paste0())+ 
           theme_minimal() +
           theme(legend.position = 'bottom')+
           scale_fill_manual(values = c("#CAC6D1", "#AF69A9")) +

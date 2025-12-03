@@ -24,8 +24,8 @@ equity_agesex_server <- function(id) {
     function(input, output, session) {
       output$equity_agesex <- renderGirafe({
         
-        chart_data <- equity_agesex %>% 
-          filter(op_year == latest_year) #tried moving this outside renderGirafe({}) but still didn't render in shiny
+        chart_data <- equity_agesex# %>% 
+          #filter(op_year == latest_year) #tried moving this outside renderGirafe({}) but still didn't render in shiny
 
         equity_agesex_plot <- ggplot(data = chart_data) +
             geom_bar_interactive(aes(x = age_group, y = n_age_sex, fill = sex,
@@ -52,7 +52,7 @@ equity_agesex_server <- function(id) {
                  y = "Number of Patients", 
                  fill = "Sex", 
                  caption = "Data from SMR01",
-                 subtitle = paste0(latest_year))+
+                 subtitle = paste0())+
             theme_minimal() +
             theme(legend.position = 'bottom')+
             scale_fill_manual(values = c("#AF69A9", "#655E9D"))

@@ -49,7 +49,7 @@ append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hos
     cli_progress_step("Adding hospital information...")
     
   hosp_lookup <- read_csv(paste0(lookup_dir, "NHSScotland_hospitals.csv")) %>% 
-    select(hospital_code, hospital_name, hosp_health_board = health_board) 
+    select(hospital_code, hospital_name, hosp_health_board = health_board, hosp_has_robot) 
   
   ras_lookup_data <- ras_lookup_data %>% 
     left_join(hosp_lookup, by = join_by(location == hospital_code))

@@ -2,7 +2,8 @@
 ### SNAP SRASA project - R Profile ###
 ######################################.
 
-setwd("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa")
+#setwd("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa") #this isn't great as its to your branchy area not dynamic
+
 # Source Renv
 source("renv/activate.R")
 
@@ -40,17 +41,31 @@ library(phsverse)
 library(phslookups)
 
 # Set constants
-candidate_codes <- read_csv("../../../(12) Data/Lookups/ras_procedure_codes.csv") %>%  #move all this to r profile
+candidate_codes <- read_csv("../../../(12) Data/lookups/ras_procedure_codes.csv") %>%  #move all this to r profile
   rename(op_specialty = specialty)
 candidate_list <- dplyr::pull(candidate_codes, code)
 
-approach_codes <- read_csv("../../../(12) Data/Lookups/approach_codes.csv") 
+approach_codes <- read_csv("../../../(12) Data/lookups/approach_codes.csv") 
 approach_list <- dplyr::pull(approach_codes, approach_code)
 
 robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
 minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
 robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
 minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
+
+hosp_order <- c("Aberdeen Royal Infirmary",
+                "Glasgow Royal Infirmary",
+                "Golden Jubilee University National Hospital",
+                "Ninewells Hospital",
+                "Queen Elizabeth University Hospital",
+                "Raigmore Hospital",
+                "Royal Infirmary of Edinburgh at Little France",
+                "St John's Hospital",
+                "University Hospital Crosshouse",
+                "University Hospital Hairmyres",
+                "Victoria Hospital",
+                "Western General Hospital",
+                "Other Hospital Listed")
 
 # Conflict preferences
 conflict_prefer('filter','dplyr')
@@ -72,10 +87,6 @@ conflict_prefer('last', 'dplyr')
 # Directories
 lookup_dir <- "../../../(12) Data/lookups/"
 data_dir <- "../../../(12) Data/"
-
-# Function
-list.files("./02_setup/", full.names = TRUE) %>% 
-  walk(source)
 
 # Project screen
 cat("

@@ -86,7 +86,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
 
                       FROM ANALYSIS.SMR01_PI
                       WHERE ADMISSION_DATE >= ", start_date, "
-                          AND ADMISSION_DATE <= ", end_date, "
+                          AND ADMISSION_DATE < ", end_date, "
                         ORDER BY LINK_NO, ADMISSION_DATE, 
                         DISCHARGE_DATE, ADMISSION, DISCHARGE, URI")
   

@@ -36,9 +36,25 @@ mgmt_data_dir <- "../../../../../../(12) Data/management_report/"
 #text_dir <- "./"
 
 ### Utility functions ----------------------------------------------------------
-latest_year <- Sys.Date() %>% 
-  lubridate::floor_date("year") %m-% years(1) %>% 
-  format("%Y") # The last full calendar year (prev year to present)
+latest_date <- Sys.Date() %>% 
+  lubridate::floor_date("month") %m-% months(2)
+
+start_date <- latest_date %>% 
+  lubridate::floor_date("month") %m-% months(12)
+
+hosp_colours <- c("Aberdeen Royal Infirmary" = "#3F3685",
+                  "Glasgow Royal Infirmary" = "#CDA1C9",
+                  "Golden Jubilee University National Hospital" = "#0078D4",
+                  "Ninewells Hospital" = "#C1DD93",
+                  "Queen Elizabeth University Hospital" = "#1E7F84",
+                  "Raigmore Hospital" = "#9F9BC2",
+                  "Royal Infirmary of Edinburgh at Little France" = "#9B4393",
+                  "St John's Hospital" = "#80BCEA",
+                  "University Hospital Crosshouse" = "#83BB26",
+                  "University Hospital Hairmyres" = "#8FBFC2",
+                  "Victoria Hospital" = "#6B5C85",
+                  "Western General Hospital" = "#E39C8C",
+                  "Other Hospital Listed" = "#948DA3")
 
 ### Read in data ---------------------------------------------------------------
 

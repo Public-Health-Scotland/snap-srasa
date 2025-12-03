@@ -14,8 +14,11 @@ util_procsday_ui <- function(id) {
   tagList(
     selectInput(ns("month"),
                 label = "Month",
-                choices = unique(util_procsday$proc_mth_yr),
-                selected = paste0(latest_year, "-01")),
+                choices = unique(util_procsday$op_mth),
+                selected = max(util_procsday$op_mth)),
+    selectInput(ns("hospital"),
+                label = "Hospital",
+                choices = unique(util_procsday$hospital_name_grp)),
     withSpinner(girafeOutput(ns("util_procsday"),height=450))
   )
 }
@@ -28,23 +31,32 @@ util_procsday_server <- function(id) {
     function(input, output, session) {
       output$util_procsday <- renderGirafe({
         
-        chart_data <- util_procsday %>% 
-        filter(op_year == latest_year,
-               proc_mth_yr == input$month,
-               hospital_name != "Other Hospital Listed")
+        chart_data <- util_procsday 
+        
+        y_limit <- ceiling(max(chart_data$mean_procs_pd))+0.1
+        
+        chart_data <- chart_data %>% 
+        filter(op_mth == input$month,
+               hospital_name_grp == input$hospital) %>% 
+          mutate(op_mth = format(op_mth, "%Y-%m"))
+        
+        y_limit <- ceiling(max(chart_data$mean_procs_pd))+0.5
         
         util_procsday_plot <- ggplot(data = chart_data, 
-                                     aes(x = dow, y = mean_procs_pd, fill = hospital_name,
-                                         tooltip = paste0("Hospital Location: ", hospital_name,
+                                     aes(x = dow, y = mean_procs_pd, fill = hospital_name_grp,
+                                         tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                           "\n Mean no. RAS procedures on ", dow,"s: ", mean_procs_pd,
-                                                          "\n Month: ", proc_mth_yr),
+                                                          "\n Month: ", op_mth),
                                          data_id = dow)) +
           geom_bar_interactive(stat = "identity")+
+          geom_hline_interactive(yintercept = 1.5, linetype = "dashed", color = "red")+
           labs(x = "Month", 
                y = "Mean no. RAS procedures per day", 
                caption = "Data from SMR01",
                subtitle = paste0())+ 
-          facet_wrap(.~ hospital_name) +
+          ylim(0, y_limit)+
+          scale_fill_manual(values = hosp_colours)+
+         # facet_wrap(.~ hospital_name_grp) +
           theme_minimal() +
           theme(legend.position = 'none') 
         
