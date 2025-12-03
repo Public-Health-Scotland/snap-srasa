@@ -28,7 +28,7 @@ p_equity <- page_sidebar(
   
   card(full_screen = TRUE,
       card_header(paste0("Figure X: Total utilisation of surgical robots by 
-              age group and sex of patients (", latest_year, ")")),
+              age group and sex of patients (", ")")),
       # layout_sidebar(
       #   sidebar = sidebar(
       #     title = "Local controls")), #have sidebar in-card rather than over the whole page - filter all plots on page at once or indivudally?
@@ -36,19 +36,19 @@ p_equity <- page_sidebar(
   
   card(full_screen = TRUE,
       card_header(paste0("Figure X: Total utilisation of surgical robots by 
-              SIMD quintile of patients (", latest_year, ")")),
+              SIMD quintile of patients (", ")")),
   
       equity_simd_ui("equity_simd")),
   
   card(full_screen = TRUE,
        card_header(paste0("Figure X: Total utilisation of surgical robots by 
-              urban/rural status of patients (", latest_year, ")")),
+              urban/rural status of patients (", ")")),
        
        equity_urbrural_ui("equity_urbrural")),
   
   card(full_screen = TRUE,
        card_header(paste0("Figure X: Total utilisation of surgical robots by patient's
-              number of pre-existing medical conditions (", latest_year, ")")),
+              number of pre-existing medical conditions (", ")")),
        
        equity_pemc_ui("equity_pemc"))
 )

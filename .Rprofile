@@ -2,7 +2,8 @@
 ### SNAP SRASA project - R Profile ###
 ######################################.
 
-setwd("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa")
+#setwd("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa") #this isn't great as its to your branchy area not dynamic
+
 # Source Renv
 source("renv/activate.R")
 
@@ -55,6 +56,20 @@ robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
 minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
 robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
 minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
+
+hosp_order <- c("Aberdeen Royal Infirmary",
+                "Glasgow Royal Infirmary",
+                "Golden Jubilee University National Hospital",
+                "Ninewells Hospital",
+                "Queen Elizabeth University Hospital",
+                "Raigmore Hospital",
+                "Royal Infirmary of Edinburgh at Little France",
+                "St John's Hospital",
+                "University Hospital Crosshouse",
+                "University Hospital Hairmyres",
+                "Victoria Hospital",
+                "Western General Hospital",
+                "Other Hospital Listed")
 
 # Conflict preferences
 conflict_prefer('filter','dplyr')

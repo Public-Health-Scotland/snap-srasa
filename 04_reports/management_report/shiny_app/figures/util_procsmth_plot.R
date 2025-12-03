@@ -12,6 +12,9 @@
 util_procsmth_ui <- function(id) {
   ns <- NS(id)
   tagList(
+     selectInput(ns("hospital"),
+                label = "Hospital",
+                choices = unique(util_procsmth$hospital_name_grp)),
     withSpinner(girafeOutput(ns("util_procsmth"),height=450))
   )
 }
@@ -24,21 +27,28 @@ util_procsmth_server <- function(id) {
     function(input, output, session) {
       output$util_procsmth <- renderGirafe({
         
-        chart_data <- util_procsmth %>% 
-          filter(op_year == latest_year) # ad dynamic filter by hospital location 
+        chart_data <- util_procsmth
+        
+        y_limit <- ceiling(max(chart_data$n))+1
+        
+        chart_data <- chart_data %>% 
+          filter(hospital_name_grp == input$hospital) %>% 
+          mutate(op_mth = format(op_mth, "%Y-%m"))
         
         util_procsmth_plot <- ggplot(data = chart_data, 
-                                   aes(x = proc_mth_yr, y = n, fill = hospital_name,
-                                       tooltip = paste0("Hospital Location: ", hospital_name,
+                                   aes(x = op_mth, y = n, fill = hospital_name_grp,
+                                       tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                         "\n No. RAS procedures: ", n,
-                                                        "\n Month: ", proc_mth_yr),
-                                   data_id = proc_mth_yr)) +
+                                                        "\n Month: ", op_mth),
+                                   data_id = op_mth)) +
           geom_bar_interactive(stat = "identity")+
           labs(x = "Month", 
              y = "Number of cases", 
              caption = "Data from SMR01",
              subtitle = paste0())+ 
-          #facet_wrap(.~ health_board) +
+          ylim(0, y_limit)+
+          scale_fill_manual(values = hosp_colours)+
+          #  facet_wrap(.~ hospital_name_grp) +
           theme_minimal() +
           theme(legend.position = 'none') 
       

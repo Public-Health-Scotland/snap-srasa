@@ -7,7 +7,7 @@
 
 ### source scripts -------------------------------------------------------------
 list.files("./02_setup/", full.names = TRUE) %>% 
-  map(source)
+  walk(source)
 
 ### extract smr01 data ---------------------------------------------------------
 extract_smr01_data() %>% 
