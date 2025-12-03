@@ -40,12 +40,16 @@ library(conflicted)
 library(phsverse)
 library(phslookups)
 
+# Directories
+lookup_dir <- "../../../(12) Data/lookups/"
+data_dir <- "../../../(12) Data/"
+
 # Set constants
-candidate_codes <- read_csv("../../../(12) Data/lookups/ras_procedure_codes.csv") %>%  #move all this to r profile
+candidate_codes <- read_csv(paste0(lookup_dir, "ras_procedure_codes.csv")) %>% 
   rename(op_specialty = specialty)
 candidate_list <- dplyr::pull(candidate_codes, code)
 
-approach_codes <- read_csv("../../../(12) Data/lookups/approach_codes.csv") 
+approach_codes <- read_csv(paste0(lookup_dir, "approach_codes.csv")) 
 approach_list <- dplyr::pull(approach_codes, approach_code)
 
 robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
@@ -83,10 +87,9 @@ conflict_prefer('lead','dplyr')
 conflict_prefer('first','dplyr')
 conflict_prefer('last', 'dplyr')
 
-
-# Directories
-lookup_dir <- "../../../(12) Data/lookups/"
-data_dir <- "../../../(12) Data/"
+# Function
+list.files("./02_setup/", full.names = TRUE) %>% 
+  walk(source)
 
 # Project screen
 cat("
