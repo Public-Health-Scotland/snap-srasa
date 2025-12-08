@@ -5,18 +5,23 @@
 # Bex Madden & Dylan Lewis
 # 01/12/2025
 
-append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hospital", "specialty")){
+append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural", "hospital", "specialty")){
   
   #' Append lookup values to SRASA Monthly SMR01 extract according to inputs
   #'
-  #' @description 
+  #' @description This function loads lookup files relating to postcode & 
+  #' socioeconomic status of patients, urban/rural residential status of 
+  #' patients, hospital names and location, and specialty of CIS in smr01, and
+  #' joins them into the input df
   #' 
-  #' @param df - 
-  #' @param which_lookups -
+  #' @param df - an smr01 extract
+  #' @param which_lookups - select "all" to append all lookups into the df, or
+  #'  make a selection by name from postcode, urban_rural, hospital, and specialty
   #' 
-  #' @usage 
+  #' @usage - append_lookups(df, which_lookups = "all)
   #'
-  #' @details 
+  #' @details - lookups are sourced either from the phslookups package or from 
+  #' locally held lookup tables found in srasa/(12) Data/lookups
   
   ras_lookup_data <- df %>% 
     mutate(postcode = format_postcode(postcode, format = "pc7"),
@@ -24,7 +29,7 @@ append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hos
            sex = as.factor(sex),
            sex = fct_recode(sex, "Male" = "1", "Female" = "2"))
   
-  if("postcode" %in% which_lookups){
+  if("postcode" %in% which_lookups | "all" %in% which_lookups){
     cli_progress_step("Adding postcode information...")
     
   postcode_lookup <- phslookups::get_simd_postcode() %>%
@@ -35,7 +40,7 @@ append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hos
     left_join(postcode_lookup, by = join_by(postcode == pc7)) 
 }
   
-  if("urban_rural" %in% which_lookups){
+  if("urban_rural" %in% which_lookups | "all" %in% which_lookups){
     cli_progress_step("Adding urban/rural status...")
     
   urban_rural_lookup <- get_spd() %>% 
@@ -45,7 +50,7 @@ append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hos
     left_join(urban_rural_lookup, by = join_by(postcode == pc7))
   }
   
-  if("hospital" %in% which_lookups){
+  if("hospital" %in% which_lookups | "all" %in% which_lookups){
     cli_progress_step("Adding hospital information...")
     
   hosp_lookup <- read_csv(paste0(lookup_dir, "NHSScotland_hospitals.csv")) %>% 
@@ -55,11 +60,11 @@ append_lookups <- function(df, which_lookups = c("postcode", "urban_rural", "hos
     left_join(hosp_lookup, by = join_by(location == hospital_code))
   }
   
-  if("specialty" %in% which_lookups){
+  if("specialty" %in% which_lookups | "all" %in% which_lookups){
     cli_progress_step("Adding specialty information...")
     
     specialty_lookup <- read.csv(paste0(lookup_dir, "smr01_specialty_lookup.csv")) %>% 
-      rename(specialty_desc = Value)
+      select(Code, specialty_desc)
       
   ras_lookup_data <- ras_lookup_data %>% 
     left_join(specialty_lookup, by = join_by(specialty == Code))

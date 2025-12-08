@@ -15,7 +15,8 @@ util_procsmth_ui <- function(id) {
      selectInput(ns("hospital"),
                 label = "Hospital",
                 choices = unique(util_procsmth$hospital_name_grp)),
-    withSpinner(girafeOutput(ns("util_procsmth"),height=450))
+    withSpinner(girafeOutput(ns("util_procsmth"),
+                             width = "auto", height = "auto"))
   )
 }
 
@@ -54,10 +55,11 @@ util_procsmth_server <- function(id) {
       
       girafe(ggobj = util_procsmth_plot, 
              options = list(
-               opts_tooltip(css = "border-radius:5px;padding:5px", opacity = 0.8, use_fill = TRUE),
-               opts_hover(css = "opacity:1"), #makes translucent hover, or
-               opts_hover_inv(css = "opacity:0.4") # makes non-selected translucent. format options https://r-graph-gallery.com/412-customize-css-in-interactive-ggiraph.html
-             ))
+               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_hover(css = "opacity:0.8"), #makes translucent hover, or
+               opts_hover_inv(css = "opacity:0.4")), # makes non-selected translucent. format options https://r-graph-gallery.com/412-customize-css-in-interactive-ggiraph.html
+             height_svg = 6,
+             width_svg = 9)
       })
     }
   )

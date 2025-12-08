@@ -12,7 +12,8 @@
 equity_simd_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    withSpinner(girafeOutput(ns("equity_simd"),height=450))
+    withSpinner(girafeOutput(ns("equity_simd"),
+                             width = "auto", height = "auto"))
   )
 }
 
@@ -28,11 +29,12 @@ equity_simd_server <- function(id) {
           #filter(op_year == latest_year) 
         
         equity_simd_plot <- ggplot(data = chart_data, 
-                                   aes(x = simd_quintile, y = app_prop, fill = approach_binary,
+                                   aes(x = simd_quintile, y = app_prop, fill = proc_approach_binary,
                                        tooltip = paste0("SIMD quintile: ", simd_quintile,
-                                                        "\n Sex: ", sex,
-                                                        "\n Number of patients: ", n_simd),
-                                       data_id = approach_binary)) +
+                                                        "\n Surgical approach: ", proc_approach_binary,
+                                                        "\n Number of patients: ", n_simd,
+                                                        "\n % of patients: ", app_prop),
+                                       data_id = simd_quintile)) +
           geom_bar_interactive(stat = "identity")+
           labs(x = "SIMD quintile", 
                y = "", 
@@ -45,7 +47,13 @@ equity_simd_server <- function(id) {
           scale_y_continuous(labels = function(x) paste0(x,"%")) +
           facet_wrap(.~ sex)
         
-        girafe(ggobj = equity_simd_plot)
+        girafe(ggobj = equity_simd_plot,
+               options = list(
+                 opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+                 opts_hover(css = "opacity:0.8"), #makes translucent hover, or
+                 opts_hover_inv(css = "opacity:0.4")), # makes non-selected translucent. format options https://r-graph-gallery.com/412-customize-css-in-interactive-ggiraph.html
+               height_svg = 6,
+               width_svg = 9)
       })
     }
   )

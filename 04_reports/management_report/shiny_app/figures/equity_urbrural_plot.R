@@ -12,7 +12,8 @@
 equity_urbrural_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    withSpinner(girafeOutput(ns("equity_urbrural"),height=450))
+    withSpinner(girafeOutput(ns("equity_urbrural"),
+                             width = "auto", height = "auto"))
   )
 }
 

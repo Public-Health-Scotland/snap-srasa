@@ -42,32 +42,34 @@ latest_date <- Sys.Date() %>%
 start_date <- latest_date %>% 
   lubridate::floor_date("month") %m-% months(12)
 
-hosp_colours <- c("Aberdeen Royal Infirmary" = "#3F3685",
-                  "Glasgow Royal Infirmary" = "#CDA1C9",
-                  "Golden Jubilee University National Hospital" = "#0078D4",
-                  "Ninewells Hospital" = "#C1DD93",
-                  "Queen Elizabeth University Hospital" = "#1E7F84",
-                  "Raigmore Hospital" = "#9F9BC2",
-                  "Royal Infirmary of Edinburgh at Little France" = "#9B4393",
-                  "St John's Hospital" = "#80BCEA",
-                  "University Hospital Crosshouse" = "#83BB26",
-                  "University Hospital Hairmyres" = "#8FBFC2",
-                  "Victoria Hospital" = "#6B5C85",
-                  "Western General Hospital" = "#E39C8C",
-                  "Other Hospital Listed" = "#948DA3")
+hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
+                  "Glasgow Royal Infirmary" = "#94AABD",
+                  "Golden Jubilee University National Hospital" = "#28A197",
+                  "Ninewells Hospital" = "#B4DEDB",
+                  "Queen Elizabeth University Hospital" = "#801650",
+                  "Raigmore Hospital" = "#CCA2B9",
+                  "Royal Infirmary of Edinburgh at Little France" = "#F46A25",
+                  "St John's Hospital" = "#FBC3A8",
+                  "University Hospital Crosshouse" = "#3E8ECC",
+                  "University Hospital Hairmyres" = "#A8CCE8",
+                  "Victoria Hospital" = "#3F085C",
+                  "Western General Hospital" = "#A285D1",
+                  "Other Hospital Listed" = "#3D3D3D")
 
 ### Read in data ---------------------------------------------------------------
 
 #### Utilisation data ----
 util_procsmth <- read_parquet(paste0(mgmt_data_dir, "util_procsmth.parquet"))
 util_procsday <- read_parquet(paste0(mgmt_data_dir, "util_procsday.parquet"))
-util_procspec <- read_parquet(paste0(mgmt_data_dir, "util_procspec.parquet"))
-  
+
 #### Equity data ----
-equity_agesex <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_agesex.parquet"))
-equity_simd <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_simd.parquet"))
-equity_urbrural <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_urbrural.parquet"))
-equity_pemc <- read_parquet(paste0(bex_data_dir, "mgmt_data/equity_pemc.parquet"))
+equity_agesex <- read_parquet(paste0(mgmt_data_dir, "equity_agesex.parquet"))
+equity_agemean <- read_parquet(paste0(mgmt_data_dir, "equity_agemean.parquet"))
+equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
+# equity_urbrural <- read_parquet(paste0(mgmt_data_dir, "equity_urbrural.parquet"))
+# equity_pemc <- read_parquet(paste0(mgmt_data_dir, "equity_pemc.parquet"))
+equity_procspec <- read_parquet(paste0(mgmt_data_dir, "equity_procspec.parquet"))
+equity_specsday <- read_parquet(paste0(mgmt_data_dir, "equity_specsday.parquet"))
 
 #### Outcome data ----
 

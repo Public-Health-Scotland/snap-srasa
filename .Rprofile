@@ -45,17 +45,13 @@ lookup_dir <- "../../../(12) Data/lookups/"
 data_dir <- "../../../(12) Data/"
 
 # Set constants
-candidate_codes <- read_csv(paste0(lookup_dir, "ras_procedure_codes.csv")) %>% 
-  rename(op_specialty = specialty)
-candidate_list <- dplyr::pull(candidate_codes, code)
+phase1_list <- read_csv(paste0(lookup_dir, "phase1_procedure_codes.csv")) %>% 
+  dplyr::pull(code)
 
-approach_codes <- read_csv(paste0(lookup_dir, "approach_codes.csv")) 
-approach_list <- dplyr::pull(approach_codes, approach_code)
+phase2_list <- read_csv(paste0(lookup_dir, "phase2_procedure_codes.csv")) %>% 
+  dplyr::pull(code)
 
-robotics_list <- approach_codes$approach_code[!is.na(approach_codes$robotic)]
-minimal_list <- approach_codes$approach_code[!is.na(approach_codes$minimal)]
-robotic_conv_list <- approach_codes$approach_code[!is.na(approach_codes$robotic_conv)]
-minimal_conv_list <- approach_codes$approach_code[!is.na(approach_codes$minimal_conv)]
+source("./02_setup/get_approach_lists.R")
 
 hosp_order <- c("Aberdeen Royal Infirmary",
                 "Glasgow Royal Infirmary",
