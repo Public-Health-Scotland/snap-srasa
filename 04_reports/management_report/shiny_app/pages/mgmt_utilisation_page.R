@@ -26,6 +26,11 @@ p_utilisation <- nav_panel(
          card_header(paste0("Figure X: Mean no. RAS procedures performed per
                           day, by hospital (", start_date, " - ", latest_date, ")")),
          util_procsday_ui("util_procsday")),
+    card(full_screen = FALSE,
+         fill = FALSE,
+         card_header(paste0("Figure X: Proportion of Phase 1 procedures performed robotically per
+                          month, by specialty (", start_date, " - ", latest_date, ")")),
+         util_procsfunnel_ui("util_procsfunnel")),
     
     col_widths = c(-2,8,-2,-2,8,-2)
   )
