@@ -12,7 +12,8 @@
 equity_pemc_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    withSpinner(girafeOutput(ns("equity_pemc"),height=450))
+    withSpinner(girafeOutput(ns("equity_pemc"),
+                             width = "auto", height = "auto"))
   )
 }
 

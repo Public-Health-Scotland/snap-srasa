@@ -11,7 +11,7 @@ list.files("./02_setup/", full.names = TRUE) %>%
 
 ### extract smr01 data ---------------------------------------------------------
 extract_smr01_data() %>% 
-  append_lookups() %>% 
+  append_lookups(which_lookups = "all") %>% 
   
   # save extract
   write_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_", 

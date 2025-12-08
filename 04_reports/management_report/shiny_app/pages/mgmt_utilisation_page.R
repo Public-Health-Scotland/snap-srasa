@@ -14,15 +14,20 @@ p_utilisation <- nav_panel(
   value = "mgmt_utilisation",
   h1("Utilisation"),
   
-  card(full_screen = TRUE,
-       card_header(paste0("Figure X: Total number of RAS procedures monthly by 
-                          hospital (", ")")),
-       
-       util_procsmth_ui("util_procsmth")),
-  
-  card(full_screen = TRUE,
-       card_header(paste0("Figure X: Mean no. RAS procedures performed per
-                          day, by hospital (", ")")),
-       
-       util_procsday_ui("util_procsday"))
+  layout_columns(
+    card(full_screen = FALSE,
+         fill = FALSE,
+         card_header(paste0("Figure X: Total number of RAS procedures monthly by 
+                          hospital (", start_date, " - ", latest_date, ")")),
+         util_procsmth_ui("util_procsmth")),
+    
+    card(full_screen = FALSE,
+         fill = FALSE,
+         card_header(paste0("Figure X: Mean no. RAS procedures performed per
+                          day, by hospital (", start_date, " - ", latest_date, ")")),
+         util_procsday_ui("util_procsday")),
+    
+    col_widths = c(-2,8,-2,-2,8,-2)
+  )
 )
+

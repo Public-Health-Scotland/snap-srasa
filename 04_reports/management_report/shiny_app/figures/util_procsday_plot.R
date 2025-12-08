@@ -19,7 +19,8 @@ util_procsday_ui <- function(id) {
     selectInput(ns("hospital"),
                 label = "Hospital",
                 choices = unique(util_procsday$hospital_name_grp)),
-    withSpinner(girafeOutput(ns("util_procsday"),height=450))
+    withSpinner(girafeOutput(ns("util_procsday"),
+                             width = "auto", height = "auto"))
   )
 }
 
@@ -40,8 +41,6 @@ util_procsday_server <- function(id) {
                hospital_name_grp == input$hospital) %>% 
           mutate(op_mth = format(op_mth, "%Y-%m"))
         
-        y_limit <- ceiling(max(chart_data$mean_procs_pd))+0.5
-        
         util_procsday_plot <- ggplot(data = chart_data, 
                                      aes(x = dow, y = mean_procs_pd, fill = hospital_name_grp,
                                          tooltip = paste0("Hospital Location: ", hospital_name_grp,
@@ -49,9 +48,9 @@ util_procsday_server <- function(id) {
                                                           "\n Month: ", op_mth),
                                          data_id = dow)) +
           geom_bar_interactive(stat = "identity")+
-          geom_hline_interactive(yintercept = 1.5, linetype = "dashed", color = "red")+
-          labs(x = "Month", 
-               y = "Mean no. RAS procedures per day", 
+          geom_hline_interactive(yintercept = 1.5, linetype = "dashed", color = "grey30")+
+          labs(x = "Day of the Week", 
+               y = "Monthly mean no. RAS procedures", 
                caption = "Data from SMR01",
                subtitle = paste0())+ 
           ylim(0, y_limit)+
@@ -62,10 +61,11 @@ util_procsday_server <- function(id) {
         
         girafe(ggobj = util_procsday_plot, 
                options = list(
-                 opts_tooltip(css = "border-radius:5px;padding:5px", opacity = 0.8, use_fill = TRUE),
-                 opts_hover(css = "opacity:1"), #makes translucent hover, or
-                 opts_hover_inv(css = "opacity:0.4") # makes non-selected translucent. format options https://r-graph-gallery.com/412-customize-css-in-interactive-ggiraph.html
-               ))
+                 opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+                 opts_hover(css = "opacity:0.8"), #makes translucent hover, or
+                 opts_hover_inv(css = "opacity:0.4")), # makes non-selected translucent. format options https://r-graph-gallery.com/412-customize-css-in-interactive-ggiraph.html
+               height_svg = 6,
+               width_svg = 9)
       })
     }
   )

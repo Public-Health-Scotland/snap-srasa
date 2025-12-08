@@ -16,9 +16,11 @@ server <- function(input, output, session) {
 
   #Equity page
   equity_agesex_server("equity_agesex")
+  equity_agemean_server("equity_agemean")
+  equity_agesexprop_server("equity_agesexprop")
   equity_simd_server("equity_simd")
-  equity_urbrural_server("equity_urbrural")
-  equity_pemc_server("equity_pemc")
+  # equity_urbrural_server("equity_urbrural")
+  # equity_pemc_server("equity_pemc")
   
   
   

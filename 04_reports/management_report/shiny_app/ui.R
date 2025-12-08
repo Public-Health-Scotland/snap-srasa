@@ -11,7 +11,7 @@ ui <- page_navbar(
   inverse = TRUE,
   fillable = FALSE,
   
-  nav_panel(title = "Introduction", p_introduction),
+  #nav_panel(title = "Introduction", p_introduction),
   nav_panel(title = "Utilisation", p_utilisation),
   nav_panel(title = "Equity", p_equity),
   #nav_panel(title = "Outcome", p_outcome)

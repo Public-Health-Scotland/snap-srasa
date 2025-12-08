@@ -107,7 +107,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
     separate_wider_position(other_operation_2, c(op3a = 4, op3b = 4), too_few = "align_start") %>% 
     separate_wider_position(other_operation_3, c(op4a = 4, op4b = 4), too_few = "align_start")  %>% 
     
-    # make new column for approach codes only
+    # make new columns to extract and label approach codes
     mutate(op1_approach = case_when(!is.na(op1a) & op1b %in% approach_list ~ op1b, 
                                     !is.na(op1a) & !(op1b %in% approach_list) ~ "NOS"), #if no matching approach code call it 'NOS'
            op2_approach = case_when(!is.na(op2a) & op2b %in% approach_list ~ op2b,
@@ -123,15 +123,76 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
                                                     . %in% minimal_list ~ "MIA",
                                                     . == "NOS" ~ "NOS",
                                                     #is.na(.) ~ "NOS", # need to add in is.na = "NOS" too test tthis
-                                                    . == "Y721" ~ "RAS conv open",
-                                                    . %in% c("Y714", "Y722") ~ "MIA conv open",
+                                                    . %in% robotic_conv_list ~ "RAS conv open",
+                                                    . %in% minimal_conv_list ~ "MIA conv open",
                                                     .default = NA_character_)),
+           
+           # make logical column indicating whether RAS has been used
            ras_proc = case_when(op1_approach == "RAS" | op1_approach == "RAS conv open" ~ TRUE,
                                 op2_approach == "RAS" | op2_approach == "RAS conv open" ~ TRUE,
                                 op3_approach == "RAS" | op3_approach == "RAS conv open" ~ TRUE,
                                 op4_approach == "RAS" | op4_approach == "RAS conv open" ~ TRUE,
                                 is.na(op1_approach) & is.na(op2_approach) & is.na(op3_approach) & is.na(op4_approach) ~ NA,
-                                .default = FALSE))
+                                .default = FALSE),
+           
+           #make 2 columns for phase1 candidate procedure codes and their associated dates
+           phase1_proc1 = case_when(op1a %in% phase1_list ~ op1a, 
+                                    op2a %in% phase1_list ~ op2a,
+                                    op3a %in% phase1_list ~ op3a,
+                                    op4a %in% phase1_list ~ op4a,
+                                    .default = NA_character_),
+           phase1_proc1_date = case_when(op1a == phase1_proc1 ~ date_of_main_operation,
+                                         op2a == phase1_proc1 ~ date_of_other_operation_1,
+                                         op3a == phase1_proc1 ~ date_of_other_operation_2,
+                                         op4a == phase1_proc1 ~ date_of_other_operation_3,
+                                         .default = NA_Date_),
+           phase1_proc2 = case_when(!is.na(phase1_proc1) &
+                                      phase1_proc1 != op2a &
+                                      op2a %in% phase1_list ~ op2a,
+                                    !is.na(phase1_proc1) &
+                                      phase1_proc1 != op3a &
+                                      op3a %in% phase1_list ~ op3a,
+                                    !is.na(phase1_proc1) &
+                                      phase1_proc1 != op4a &
+                                      op4a %in% phase1_list ~ op4a,
+                                    .default = NA_character_),
+           phase1_proc2_date = case_when(op1a == phase1_proc2 ~ date_of_main_operation,
+                                         op2a == phase1_proc2 ~ date_of_other_operation_1,
+                                         op3a == phase1_proc2 ~ date_of_other_operation_2,
+                                         op4a == phase1_proc2 ~ date_of_other_operation_3,
+                                         .default = NA_Date_),
+           
+           #make 2 columns for phase2 candidate procedure codes and their associated dates
+           phase2_proc1 = case_when(op1a %in% phase2_list ~ op1a, 
+                                    op2a %in% phase2_list ~ op2a,
+                                    op3a %in% phase2_list ~ op3a,
+                                    op4a %in% phase2_list ~ op4a,
+                                    .default = NA_character_),
+           phase2_proc1_date = case_when(op1a == phase2_proc1 ~ date_of_main_operation,
+                                         op2a == phase2_proc1 ~ date_of_other_operation_1,
+                                         op3a == phase2_proc1 ~ date_of_other_operation_2,
+                                         op4a == phase2_proc1 ~ date_of_other_operation_3,
+                                         .default = NA_Date_),
+           phase2_proc2 = case_when(!is.na(phase2_proc1) &
+                                      phase2_proc1 != op2a &
+                                      op2a %in% phase2_list ~ op2a,
+                                    !is.na(phase2_proc1) &
+                                      phase2_proc1 != op3a &
+                                      op3a %in% phase2_list ~ op3a,
+                                    !is.na(phase2_proc1) &
+                                      phase2_proc1 != op4a &
+                                      op4a %in% phase2_list ~ op4a,
+                                    .default = NA_character_),
+           phase2_proc2_date = case_when(op1a == phase2_proc2 ~ date_of_main_operation,
+                                         op2a == phase2_proc2 ~ date_of_other_operation_1,
+                                         op3a == phase2_proc2 ~ date_of_other_operation_2,
+                                         op4a == phase2_proc2 ~ date_of_other_operation_3,
+                                         .default = NA_Date_),
+           
+           #make logical column indicating whether either phase1 or phase2 proc is present
+           candidate_proc = case_when(!is.na(phase1_proc1) | !is.na(phase2_proc1) ~ TRUE, 
+                                      is.na(phase1_proc1) & is.na(phase2_proc1) ~ NA,
+                                      .default = FALSE))
   
   ### Disconnect and clean environment -----------------------------------------
   dbDisconnect(smr01_connect)
