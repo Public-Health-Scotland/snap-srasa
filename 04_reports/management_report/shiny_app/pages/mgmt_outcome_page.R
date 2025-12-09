@@ -12,5 +12,5 @@ p_outcome <- nav_panel(
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_outcome",
-  h1("Outcome")
+  h2("Outcome")
 )

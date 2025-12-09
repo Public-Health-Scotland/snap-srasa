@@ -153,7 +153,7 @@ write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsd
 equity_agesex <- long_data %>% 
   filter(proc_date >= start_date & 
            proc_date < latest_date) %>% # last 12 months
-  group_by(age_group, sex, proc_approach_binary) %>%
+  group_by(age_group, sex, proc_approach_binary) %>% # add in ability to filter by specialty and hospital with 'all' options for both
   summarise(n_age_sex = n()) %>% 
   group_by(age_group, sex) %>% 
   mutate(tot_procs = sum(n_age_sex),
