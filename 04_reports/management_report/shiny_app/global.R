@@ -27,6 +27,8 @@ library(magrittr)
 library(forcats)
 library(purrr)
 library(arrow)
+# funnel plot code - will eventually replace with package
+source("/conf/quality/SHA_team/SNAP/Analysts/Dylan/functions/funnel_lines.R")
 
 ### Set directories ------------------------------------------------------------
 bex_data_dir <- "../../../../../../(06) Testing/Bex_testing/" # temporary location
