@@ -12,7 +12,7 @@ p_utilisation <- nav_panel(
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_utilisation",
-  h1("Utilisation"),
+  h2("Utilisation of Surgical Robots"),
   
   layout_columns(
     card(full_screen = FALSE,

@@ -10,5 +10,5 @@
 p_introduction <- nav_panel(
   title = "Introduction",
   value = "mgmt_introduction",
-  h1("Introduction")
+  h2("Introduction")
 )

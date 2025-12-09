@@ -8,11 +8,11 @@
 ### Define page layout ---------------------------------------------------------
 
 p_equity <- nav_panel( #page_sidebar for controls in sidebar
-  title = "Equity",
+  title = "Patient Equity",
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_equity",
-  h1("Equity"),
+  h2("Patient Equity of Access to RAS"),
   
   HTML("Equity data is shown for Phase 1 procedures only, comparing patients who received RAS to those who did not"),
  
