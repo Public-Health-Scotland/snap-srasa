@@ -8,7 +8,7 @@
 ### Define page layout ---------------------------------------------------------
 
 p_specialty <- nav_panel( #page_sidebar for controls in sidebar
-  title = "Utilisation by Specialty",
+  title = "Specialty Access",
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_specialty",
@@ -17,6 +17,7 @@ p_specialty <- nav_panel( #page_sidebar for controls in sidebar
   HTML("Specialty data is shown for Phase 1 RAS procedures only"),
   
   layout_columns(
+    col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
     
     card(full_screen = FALSE,
          fill = FALSE,
@@ -25,7 +26,6 @@ p_specialty <- nav_panel( #page_sidebar for controls in sidebar
          
          spec_procsmth_ui("spec_procsmth")),
     
-    col_widths = c(-2,8,-2)
   )
 )
 

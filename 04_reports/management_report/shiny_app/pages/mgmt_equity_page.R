@@ -17,6 +17,7 @@ p_equity <- nav_panel( #page_sidebar for controls in sidebar
   HTML("Equity data is shown for Phase 1 procedures only, comparing patients who received RAS to those who did not"),
  
   layout_columns(
+    col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
     navset_card_tab(full_screen = FALSE,
                     title = paste0("Figure X: Total number of procedures performed robotically by 
                                  age group and sex of patients (", start_date, " - ", latest_date, ")"),
@@ -43,6 +44,14 @@ p_equity <- nav_panel( #page_sidebar for controls in sidebar
          
          equity_simd_ui("equity_simd")),
     
+    card(
+      full_screen = FALSE,
+      fill = FALSE,
+      card_header(paste0("Figure X: Proportion of procedures performed robotically by specialty and 
+              health board of patient residence (", start_date, " - ", latest_date, ")")),
+      equity_resfunnel_ui(id = "resfunnel")
+    ),
+    
     # card(full_screen = FALSE,
     #      fill = FALSE,
     #      card_header(paste0("Figure X: Total utilisation of surgical robots by 
@@ -56,8 +65,6 @@ p_equity <- nav_panel( #page_sidebar for controls in sidebar
     #             number of pre-existing medical conditions (", ")")),
     #      
     #      equity_pemc_ui("equity_pemc")),
-    
-    col_widths = c(-2,8,-2)
   )
 )
 
