@@ -26,6 +26,11 @@ p_specialty <- nav_panel( #page_sidebar for controls in sidebar
          
          spec_procsmth_ui("spec_procsmth")),
     
+    card(full_screen = FALSE,
+         fill = FALSE,
+         card_header(paste0("Figure X: Proportion of Phase 1 procedures performed robotically per
+                          month, by specialty and hospital (", start_date, " - ", latest_date, ")")),
+         util_procsfunnel_ui("util_procsfunnel")),
   )
 )
 

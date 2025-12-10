@@ -18,7 +18,8 @@ equity_resfunnel_ui <- function(id) {
                 selected = max(equity_resprop$op_mth_year)),
     selectInput(ns("specialty"),
                 label = "Specialty",
-                choices = unique(equity_resprop$code_specialty)),
+                choices = unique(equity_resprop$code_specialty),
+                selected = "All"),
     funnel_ui(id = ns("funnel"))
   )
 }

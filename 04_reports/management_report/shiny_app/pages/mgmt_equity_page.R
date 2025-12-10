@@ -47,7 +47,7 @@ p_equity <- nav_panel( #page_sidebar for controls in sidebar
     card(
       full_screen = FALSE,
       fill = FALSE,
-      card_header(paste0("Figure X: Proportion of procedures performed robotically by specialty and 
+      card_header(paste0("Figure X: Proportion of Phase 1 procedures performed robotically, by 
               health board of patient residence (", start_date, " - ", latest_date, ")")),
       equity_resfunnel_ui(id = "resfunnel")
     ),
