@@ -8,7 +8,7 @@
 ### Define page layout ---------------------------------------------------------
 
 p_specialty <- nav_panel( #page_sidebar for controls in sidebar
-  title = "Utilisation by Specialty",
+  title = "Specialty Access",
   sidebar = sidebar(
     title = "Page controls"),
   value = "mgmt_specialty",
