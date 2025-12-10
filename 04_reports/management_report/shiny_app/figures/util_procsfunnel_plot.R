@@ -3,11 +3,11 @@ util_procsfunnel_ui <- function(id) {
   tagList(
     selectInput(ns("month"),
                 label = "Month",
-                choices = unique(equity_procspec$op_mth_year),
-                selected = max(equity_procspec$op_mth_year)),
+                choices = unique(spec_procsmth$op_mth_year),
+                selected = max(spec_procsmth$op_mth_year)),
     selectInput(ns("specialty"),
                 label = "Specialty",
-                choices = unique(equity_procspec$code_specialty)),
+                choices = unique(spec_procsmth$code_specialty)),
     funnel_ui(id = ns("funnel"))
   )
 }
@@ -17,7 +17,7 @@ util_procsfunnel_server <- function(id) {
     id,
     function(input, output, session) {
       # move below into pre-processing
-      procs_prop <- equity_procspec |>
+      procs_prop <- spec_procsmth |>
         pivot_wider(values_from = n,
                     names_from = proc_approach_binary,
                     values_fill = 0) |>

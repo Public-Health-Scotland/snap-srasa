@@ -12,10 +12,10 @@
 equity_agesex_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    selectInput(ns("hospital"),
-                label = "Hospital",
+    selectInput(ns("healthboard"),
+                label = "Health Board of Residence",
                 choices = unique(subset(equity_agesex, 
-                                        equity_agesex$proc_approach_binary == "RAS")$hospital_name),
+                                        equity_agesex$proc_approach_binary == "RAS")$res_health_board),
                 selected = "All"),
     selectInput(ns("specialty"),
                 label = "Surgical Specialty",
@@ -36,35 +36,40 @@ equity_agesex_server <- function(id) {
         
         chart_data <- equity_agesex %>% 
           filter(proc_approach_binary == "RAS") %>% 
-          filter(hospital_name == input$hospital,
-                 code_specialty == input$specialty)
+          filter(res_health_board == input$healthboard,
+                 code_specialty == input$specialty) # for instance where levels have only male or female 'occupants' levels get plotted one after the other which messes up order
+        #either need to pad or mutate to make male values negative and avodi need to subset in ggplot
         
-        y_limit <- ifelse(nrow(chart_data)>= 1, ceiling(max(chart_data$n_age_sex))+1, 0) #could move before dynamic filters to keep consistent across filters
-        y_limit_neg <- ifelse(nrow(chart_data)>= 1, -1*(ceiling(max(chart_data$n_age_sex))+1), 0)
+        y_limit <- ifelse((ceiling(max(chart_data$n_age_sex))+1) >= 5, 
+                          ceiling(max(chart_data$n_age_sex))+1, 5) #could move before dynamic filters to keep scales constant
+        y_limit_neg <- ifelse((ceiling(max(chart_data$n_age_sex))+1) >= 5, 
+                              -1*(ceiling(max(chart_data$n_age_sex))+1), -5)
         
         chart_data <- chart_data %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
-                 x = "90+") 
+                 x = "90+",
+                 res_health_board = factor(res_health_board, levels = hb_order)) 
         
         equity_agesex_plot <- ggplot(data = chart_data) +
-          geom_bar_interactive(aes(x = age_group, y = n_age_sex, fill = sex,
+          geom_bar_interactive(aes(x = factor(age_group), y = -n_age_sex, fill = sex,
                                    tooltip = paste0("Sex: ", sex,
                                                     "\n Age Group: ", age_group,
                                                     "\n Number of patients: ", n_age_sex),
                                    data_id = age_group), 
-                               stat = "identity", width=0.9, #colour="black",
-                               subset(chart_data, chart_data$sex == "Female"))+
-          geom_bar_interactive(aes(x = age_group, y = -n_age_sex, fill = sex,
-                                   tooltip = paste0("Sex: ", sex,
-                                                    "\n Age Group: ", age_group,
-                                                    "\n Number of patients: ", n_age_sex),
-                                   data_id = age_group), 
-                               stat = "identity", width=0.9, #colour="black",
+                               stat = "identity", width=0.9, 
                                subset(chart_data, chart_data$sex == "Male"))+
+          geom_bar_interactive(aes(x = factor(age_group), y = n_age_sex, fill = sex,
+                                   tooltip = paste0("Sex: ", sex,
+                                                    "\n Age Group: ", age_group,
+                                                    "\n Number of patients: ", n_age_sex),
+                                   data_id = age_group), 
+                               stat = "identity", width=0.9, 
+                               subset(chart_data, chart_data$sex == "Female"))+
           geom_text_interactive(aes(x = x, y = y, label = sex, hjust = 1)) +
           scale_y_continuous(breaks = seq(y_limit_neg, y_limit, round(y_limit/5, 0)),
                              limits = c(y_limit_neg, y_limit),
                              labels = seq(y_limit_neg, y_limit, round(y_limit/5, 0))) +
+          scale_x_discrete(breaks = age_group_order) +
           labs(x = "Age Group", 
                y = "Number of Patients", 
                fill = "Sex", 

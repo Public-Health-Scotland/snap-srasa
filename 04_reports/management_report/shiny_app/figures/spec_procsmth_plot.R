@@ -14,8 +14,8 @@ spec_procsmth_ui <- function(id) {
   tagList(
     selectInput(ns("hospital"),
                 label = "Hospital",
-                choices = unique(subset(equity_procspec, 
-                                        equity_procspec$proc_approach_binary == "RAS")$hospital_name),
+                choices = unique(subset(spec_procsmth, 
+                                        spec_procsmth$proc_approach_binary == "RAS")$hospital_name),
                 selected = "All"),
     withSpinner(girafeOutput(ns("spec_procsmth"),
                              width = "auto", height = "auto"))
@@ -30,7 +30,7 @@ spec_procsmth_server <- function(id) {
     function(input, output, session) {
       output$spec_procsmth <- renderGirafe({
         
-        chart_data <- equity_procspec %>% 
+        chart_data <- spec_procsmth %>% 
           filter(proc_approach_binary == "RAS") %>% 
           mutate(op_mth_year = format(op_mth_year, "%Y-%m")) %>% 
           filter(hospital_name == input$hospital) 

@@ -16,6 +16,10 @@ equity_agemean_ui <- function(id) {
                 label = "Sex",
                 choices = unique(equity_agemean$sex),
                 selected = "All"),
+    selectInput(ns("specialty"),
+                label = "Surgical Specialty",
+                choices = unique(equity_agemean$code_specialty),
+                selected = "All"),
     withSpinner(girafeOutput(ns("equity_agemean"),
                              width = "auto", height = "auto"))
   )
@@ -30,27 +34,36 @@ equity_agemean_server <- function(id) {
       output$equity_agemean <- renderGirafe({
         
         chart_data <- equity_agemean %>% 
-          mutate(hospital_name = factor(hospital_name, levels = hosp_order)) %>% 
-          filter(proc_approach_binary == "RAS",
-                 sex == input$sex)
+          filter(proc_approach_binary == "RAS") %>% 
+          mutate(res_health_board = factor(res_health_board, levels = hb_order))
         
-        sex_mean <- round(mean(chart_data$mean_age))
-       
+        y_limit <- round(max(chart_data$mean_age+chart_data$sd_age)+2, 0)
+        y_limit_min <- round(min(chart_data$mean_age+chart_data$sd_age)-3, 0)
+        
+        sex_mean <- mean(subset(chart_data, 
+                                chart_data$res_health_board == "All" & 
+                                  chart_data$code_specialty == "All" &
+                                  chart_data$sex == "All")$mean_age)
+        
+        chart_data <- chart_data %>% 
+          filter(sex == input$sex,
+                 code_specialty == input$specialty)
+        
         equity_agemean_plot <- ggplot(data = chart_data) +
-          geom_pointrange_interactive(aes(x = hospital_name, y = mean_age, 
+          geom_pointrange_interactive(aes(x = res_health_board, y = mean_age, 
                                           ymin = mean_age-sd_age, ymax = mean_age+sd_age,
                                            colour = sex,
                                            tooltip = paste0("Sex: ", sex,
                                                       "\n Mean age: ", round(mean_age, 2),
-                                                      "\n Hospital: ", hospital_name),
+                                                      "\n Health Board of Residence: ", res_health_board),
                                      data_id = sex)) +
           geom_hline_interactive(yintercept = sex_mean, linetype = "dashed", 
                                  color = "grey30") +
-          geom_text_interactive(aes(x = "Other Hospital Listed", y = sex_mean, 
+          geom_text_interactive(aes(x = "All", y = sex_mean, 
                                     label = "mean", hjust = -0.1, vjust = -1, 
                                     colour = "grey30")) +
-          scale_y_continuous(limits = c(20, 90)) +
-          labs(x = "Hospital", 
+          scale_y_continuous(limits = c(y_limit_min, y_limit)) +
+          labs(x = "Health Board of Residence", 
                y = "Patient Mean Age", 
                colour = "Sex", 
                caption = "Data from SMR01",
