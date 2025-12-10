@@ -12,6 +12,15 @@
 equity_agesex_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    selectInput(ns("hospital"),
+                label = "Hospital",
+                choices = unique(subset(equity_agesex, 
+                                        equity_agesex$proc_approach_binary == "RAS")$hospital_name),
+                selected = "All"),
+    selectInput(ns("specialty"),
+                label = "Surgical Specialty",
+                choices = unique(equity_agesex$code_specialty),
+                selected = "All"),
     withSpinner(girafeOutput(ns("equity_agesex"),
                              width = "auto", height = "auto"))
   )
@@ -26,14 +35,16 @@ equity_agesex_server <- function(id) {
       output$equity_agesex <- renderGirafe({
         
         chart_data <- equity_agesex %>% 
-          filter(proc_approach_binary == "RAS")
+          filter(proc_approach_binary == "RAS") %>% 
+          filter(hospital_name == input$hospital,
+                 code_specialty == input$specialty)
         
-        y_limit <- ceiling(max(chart_data$n_age_sex))+1
-        y_limit_neg <- -1*(ceiling(max(chart_data$n_age_sex))+1)
-
+        y_limit <- ifelse(nrow(chart_data)>= 1, ceiling(max(chart_data$n_age_sex))+1, 0) #could move before dynamic filters to keep consistent across filters
+        y_limit_neg <- ifelse(nrow(chart_data)>= 1, -1*(ceiling(max(chart_data$n_age_sex))+1), 0)
+        
         chart_data <- chart_data %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
-                 x = "90+")
+                 x = "90+") 
         
         equity_agesex_plot <- ggplot(data = chart_data) +
           geom_bar_interactive(aes(x = age_group, y = n_age_sex, fill = sex,
@@ -51,9 +62,9 @@ equity_agesex_server <- function(id) {
                                stat = "identity", width=0.9, #colour="black",
                                subset(chart_data, chart_data$sex == "Male"))+
           geom_text_interactive(aes(x = x, y = y, label = sex, hjust = 1)) +
-          scale_y_continuous(breaks = seq(y_limit_neg, y_limit, 100),
+          scale_y_continuous(breaks = seq(y_limit_neg, y_limit, round(y_limit/5, 0)),
                              limits = c(y_limit_neg, y_limit),
-                             labels = format(abs(seq(y_limit_neg, y_limit, 100)), big.mark = ",")) +
+                             labels = seq(y_limit_neg, y_limit, round(y_limit/5, 0))) +
           labs(x = "Age Group", 
                y = "Number of Patients", 
                fill = "Sex", 
