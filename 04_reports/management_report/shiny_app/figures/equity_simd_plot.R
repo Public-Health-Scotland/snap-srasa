@@ -12,6 +12,15 @@
 equity_simd_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    selectInput(ns("healthboard"),
+                label = "Health Board of Residence",
+                choices = unique(subset(equity_simd, 
+                                        equity_simd$proc_approach_binary == "RAS")$res_health_board),
+                selected = "All"),
+    selectInput(ns("specialty"),
+                label = "Surgical Specialty",
+                choices = unique(equity_simd$code_specialty),
+                selected = "All"),
     withSpinner(girafeOutput(ns("equity_simd"),
                              width = "auto", height = "auto"))
   )
@@ -25,8 +34,9 @@ equity_simd_server <- function(id) {
     function(input, output, session) {
       output$equity_simd <- renderGirafe({
         
-        chart_data <- equity_simd# %>% 
-          #filter(op_year == latest_year) 
+        chart_data <- equity_simd %>% 
+          filter(res_health_board == input$healthboard,
+                 code_specialty == input$specialty)
         
         equity_simd_plot <- ggplot(data = chart_data, 
                                    aes(x = simd_quintile, y = app_prop, fill = proc_approach_binary,
