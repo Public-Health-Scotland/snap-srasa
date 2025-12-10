@@ -78,19 +78,15 @@ long_data <- ras_ph1_data %>%
          proc_approach_binary = case_when(proc_approach == "RAS" | proc_approach == "RAS conv open" ~ "RAS",
                                           .default = "Non-RAS"),
          age_group = as.factor(age_group),
-         age_group = fct_relevel(age_group, c("0-4", "5-9", "10-14", "15-19", 
-                                              "20-24", "25-29", "30-34", "35-39",
-                                              "40-44", "45-49", "50-54", "55-59", 
-                                              "60-64", "65-69", "70-74", "75-79",
-                                              "80-84", "85-89", "90+"))) %>% 
+         age_group = fct_relevel(age_group, age_group_order)) %>% 
   
   #join in information relating to procedure codes
   left_join(phase1_procs, by = join_by(ph1_proc_code == code)) %>% 
   select(upi_number, cis_marker, link_no, sex, op_year, op_mth_year, op_qt, 
          first_admit_date, last_discharge_date, age_in_years, age_group, 
-         simd_quintile, urban_rural_6, hospital_name, hosp_health_board, 
-         hosp_has_robot, op_no, ph1_proc_code, proc_date, proc_approach, 
-         proc_approach_binary, proc_type, code_specialty) %>% 
+         res_health_board, simd_quintile, urban_rural_6, hospital_name, 
+         hosp_health_board, hosp_has_robot, op_no, ph1_proc_code, proc_date,
+         proc_approach, proc_approach_binary, proc_type, code_specialty) %>% 
   
   #change hospital name to 'other' when a robotic surgery is listed against non-robotic site
   mutate(hospital_name = case_when(hosp_has_robot != "Yes" & 
@@ -99,8 +95,9 @@ long_data <- ras_ph1_data %>%
   filter(op_no == "proc1") #only want to count each surgery once not each proc within surgery - for now
 
 ### Hospital-level equity ------------------------------------------------------
+# show at hospital level as more relevant to specialty than hb
 ##### Total monthly no. phas1 procs by specialty & location --------------------
-equity_procspec <- long_data %>%
+spec_procsmth <- long_data %>%
   filter(proc_date >= start_date & 
            proc_date < latest_date) %>% 
   group_by(hospital_name, op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
@@ -113,7 +110,7 @@ equity_procspec <- long_data %>%
                       .groups = "drop")) %>% 
   ungroup()
 
-write_parquet(equity_procspec, paste0(data_dir, "management_report/equity_procspec.parquet"))
+write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.parquet"))
 
 ##### Weekly no. procs by specialty and location, shown monthly ----------------
 #until i can figure out mean no per spec per day of the week per month
@@ -151,41 +148,59 @@ write_parquet(equity_procspec, paste0(data_dir, "management_report/equity_procsp
 # write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
 
 ### Patient characteristics ----------------------------------------------------
+# represent by residence health board as reflects geographic equaity better
 ##### Age and Sex of patients accessing robotics -------------------------------
 equity_agesex <- long_data %>% 
   filter(proc_date >= start_date & 
-           proc_date < latest_date) %>% # last 12 months
-  group_by(hospital_name, code_specialty, age_group, sex, proc_approach_binary) %>% # add in ability to filter by specialty and hospital with 'all' options for both
+           proc_date < latest_date,
+         !is.na(res_health_board)) %>% # last 12 months
+  group_by(res_health_board, code_specialty, age_group, sex, proc_approach_binary) %>% # add in ability to filter by specialty and hospital with 'all' options for both
   summarise(n_age_sex = n()) %>% 
   group_by(code_specialty, age_group, sex, proc_approach_binary) %>%
   bind_rows(summarise(.,
                       across(where(is.numeric), sum),
-                      across(hospital_name, ~"All"),
+                      across(res_health_board, ~"All"),
                       .groups = "drop")) %>% 
   ungroup() %>% 
-  group_by(hospital_name, age_group, sex, proc_approach_binary) %>%
+  group_by(res_health_board, age_group, sex, proc_approach_binary) %>%
   bind_rows(summarise(.,
                       across(where(is.numeric), sum),
                       across(code_specialty, ~"All"),
                       .groups = "drop")) %>% 
-  group_by(hospital_name, code_specialty, age_group, sex) %>% 
+  group_by(res_health_board, code_specialty, age_group, sex) %>% 
   mutate(tot_procs = sum(n_age_sex),
-         app_prop = round(n_age_sex/tot_procs*100, 2))
+         app_prop = round(n_age_sex/tot_procs*100, 2)) %>% 
+  ungroup()
 
 write_parquet(equity_agesex, paste0(data_dir, "management_report/equity_agesex.parquet"))
 
 ##### Mean age of patients accessing robotics by location ----------------------
 equity_agemean <- long_data %>% 
   filter(proc_date >= start_date & 
-           proc_date < latest_date) %>% # last 12 months
-  group_by(hospital_name, hosp_has_robot, sex, proc_approach_binary) %>% 
+           proc_date < latest_date,
+         !is.na(res_health_board)) %>% # last 12 months
+  group_by(res_health_board, code_specialty, sex, proc_approach_binary) %>% 
   summarise(mean_age = mean(age_in_years),
-            sd_age = sd(age_in_years))  %>% 
-  group_by(hospital_name, hosp_has_robot, proc_approach_binary) %>% 
+            sd_age = sd(age_in_years)) %>% 
+  mutate(sd_age = replace_na(sd_age, 0)) %>% 
+  group_by(res_health_board, code_specialty, proc_approach_binary) %>% 
   bind_rows(summarise(.,
                       across(where(is.numeric), mean),
                       across(sex, ~"All"),
-                      .groups = "drop")) 
+                      .groups = "drop")) %>% 
+  group_by(code_specialty, sex, proc_approach_binary) %>% 
+  bind_rows(summarise(.,
+                      across(where(is.numeric), mean),
+                      across(res_health_board, ~"All"),
+                      .groups = "drop")) %>%
+  group_by(res_health_board, sex, proc_approach_binary) %>% 
+  bind_rows(summarise(.,
+                      across(where(is.numeric), mean),
+                      across(code_specialty, ~"All"),
+                      .groups = "drop")) %>% 
+  ungroup() %>% 
+  mutate(mean_age = round(mean_age, 2),
+         sd_age = round(sd_age, 2))
 
 write_parquet(equity_agemean, paste0(data_dir, "management_report/equity_agemean.parquet"))
 
@@ -221,13 +236,25 @@ write_parquet(equity_agemean, paste0(data_dir, "management_report/equity_agemean
 ##### SIMD of patients accessing robotics --------------------------------------
 equity_simd <- long_data %>% 
   filter(proc_date >= start_date & 
-           proc_date < latest_date) %>% # last 12 months
-  group_by(simd_quintile, sex, proc_approach_binary) %>%
-  summarise(n_simd = n()) %>% 
-  group_by(simd_quintile, sex) %>% 
+           proc_date < latest_date,
+         !is.na(res_health_board)) %>% # last 12 months
+  group_by(res_health_board, code_specialty, simd_quintile, sex, proc_approach_binary) %>%
+  summarise(n_simd = n()) %>%  
+  group_by(code_specialty, simd_quintile, sex, proc_approach_binary) %>%
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(res_health_board, ~"All"),
+                      .groups = "drop")) %>% 
+  ungroup() %>% 
+  group_by(res_health_board, simd_quintile, sex, proc_approach_binary) %>%
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(code_specialty, ~"All"),
+                      .groups = "drop")) %>% 
+  group_by(res_health_board, code_specialty, simd_quintile, sex) %>% 
   mutate(tot_simd = sum(n_simd),
          app_prop = round(n_simd/tot_simd*100, 2)) %>% 
-  ungroup()
+  ungroup() 
 
 write_parquet(equity_simd, paste0(data_dir, "management_report/equity_simd.parquet"))
  

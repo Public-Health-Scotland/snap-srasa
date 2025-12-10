@@ -13,9 +13,9 @@
 equity_agesexprop_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    selectInput(ns("hospital"),
-                label = "Hospital",
-                choices = unique(equity_agesex$hospital_name),
+    selectInput(ns("healthboard"),
+                label = "Health Board of Residence",
+                choices = unique(equity_agesex$res_health_board),
                 selected = "All"),
     selectInput(ns("specialty"),
                 label = "Surgical Specialty",
@@ -33,20 +33,19 @@ equity_agesexprop_server <- function(id) {
     id,
     function(input, output, session) {
       output$equity_agesexprop <- renderGirafe({
-        
-        chart_data <- equity_agesex 
-        
+       
         y_limit <- 110
         y_limit_neg <- -110
         
-        chart_data <- chart_data %>% 
+        chart_data <- equity_agesex %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
-                 x = "90+") %>% 
-          filter(hospital_name == input$hospital,
+                 x = "90+",
+                 res_health_board = factor(res_health_board, levels = hb_order)) %>% 
+          filter(res_health_board == input$healthboard,
                  code_specialty == input$specialty)
         
         equity_agesexprop_plot <- ggplot(data = chart_data) +
-          geom_bar_interactive(aes(x = age_group, y = app_prop, fill = proc_approach_binary,
+          geom_bar_interactive(aes(x = factor(age_group), y = app_prop, fill = proc_approach_binary,
                                    tooltip = paste0("Sex: ", sex,
                                                     "\n Surgical approach: ", proc_approach_binary,
                                                     "\n Age Group: ", age_group,
@@ -55,7 +54,7 @@ equity_agesexprop_server <- function(id) {
                                    data_id = age_group), 
                                stat = "identity", width=0.9,# colour="black",
                                subset(chart_data, chart_data$sex == "Female"))+
-          geom_bar_interactive(aes(x = age_group, y = -app_prop, fill = proc_approach_binary,
+          geom_bar_interactive(aes(x = factor(age_group), y = -app_prop, fill = proc_approach_binary,
                                    tooltip = paste0("Sex: ", sex,
                                                     "\n Surgical approach: ", proc_approach_binary,
                                                     "\n Age Group: ", age_group,
