@@ -26,7 +26,8 @@ server <- function(input, output, session) {
   # equity_urbrural_server("equity_urbrural")
   # equity_pemc_server("equity_pemc")
   
-  
+  #Data Quality page
+  dq_compprocs_server("dq_compprocs")
   
   #Outcome page
   
