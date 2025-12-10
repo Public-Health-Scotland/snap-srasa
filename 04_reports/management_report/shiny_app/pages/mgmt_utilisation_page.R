@@ -15,6 +15,7 @@ p_utilisation <- nav_panel(
   h2("Utilisation of Surgical Robots"),
   
   layout_columns(
+    col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
     card(full_screen = FALSE,
          fill = FALSE,
          card_header(paste0("Figure X: Total number of RAS procedures monthly by 
@@ -25,15 +26,9 @@ p_utilisation <- nav_panel(
          fill = FALSE,
          card_header(paste0("Figure X: Mean no. RAS procedures performed per
                           day, by hospital (", start_date, " - ", latest_date, ")")),
-         util_procsday_ui("util_procsday")),
+         util_procsday_ui("util_procsday"))
+  
     
-    card(full_screen = FALSE,
-         fill = FALSE,
-         card_header(paste0("Figure X: Proportion of Phase 1 procedures performed robotically per
-                          month, by specialty (", start_date, " - ", latest_date, ")")),
-         util_procsfunnel_ui("util_procsfunnel")),
-    
-    col_widths = c(-2,8,-2,-2,8,-2)
   )
 )
 

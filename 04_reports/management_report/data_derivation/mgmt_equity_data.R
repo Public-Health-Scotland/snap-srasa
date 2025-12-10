@@ -147,6 +147,31 @@ write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.p
 # 
 # write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
 
+
+### Geographical equity -----------------------------------------------------
+#### Proportion robotic of phas1 procs by specialty and patient residence HB
+equity_resprop <- long_data %>%
+  filter(proc_date >= start_date & 
+           proc_date < latest_date) %>% 
+  group_by(res_health_board, op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  group_by(res_health_board, op_mth_year, op_year, proc_approach_binary) %>% 
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(code_specialty, ~"All"),
+                      .groups = "drop")) %>%
+  ungroup() %>%
+  pivot_wider(values_from = n,
+              names_from = proc_approach_binary,
+              values_fill = 0) %>%
+  mutate(n = RAS + `Non-RAS`,
+         prop = RAS / n) %>%
+  ungroup()
+
+write_parquet(equity_resprop, paste0(data_dir, "management_report/equity_resprop.parquet"))
+
+
 ### Patient characteristics ----------------------------------------------------
 # represent by residence health board as reflects geographic equaity better
 ##### Age and Sex of patients accessing robotics -------------------------------

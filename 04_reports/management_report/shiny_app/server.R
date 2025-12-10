@@ -23,6 +23,7 @@ server <- function(input, output, session) {
   equity_agemean_server("equity_agemean")
   equity_agesexprop_server("equity_agesexprop")
   equity_simd_server("equity_simd")
+  equity_resfunnel_server(id = "resfunnel")
   # equity_urbrural_server("equity_urbrural")
   # equity_pemc_server("equity_pemc")
   
