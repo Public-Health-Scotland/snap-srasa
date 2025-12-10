@@ -22,7 +22,7 @@ funnel_ui <- function(id) {
 funnel_server <- function(id,
                           data,
                           by,
-                          ylab = "Proportion of procedures performed robotically",
+                          ylab = "Prop. performed robotically",
                           n = n,
                           prop = prop) {
   moduleServer(
@@ -39,16 +39,18 @@ funnel_server <- function(id,
           ggplot(
             aes(x = {{n}},
                 y = {{prop}},
-                tooltip = {{by}},
+                tooltip = paste0({{by}},
+                                 "\nNumber of procedures: ", {{n}},
+                                 "\n", ylab, ": ", format({{prop}}, nsmall=2, digits = 2)),
                 data_id = {{by}})) +
           geom_funnel_lines() +
           phs_funnel_style() +
           geom_point_interactive(size = 3) +
           theme_minimal() +
+          theme(legend.position = "bottom",
+                legend.title = element_blank()) +
           labs(x="Number of procedures",
-               y="Proportion of procedures performed robotically",
-               linetype = NULL,
-               colour = NULL)
+               y=ylab)
         
         girafe(ggobj = funnel, 
                options = list(
