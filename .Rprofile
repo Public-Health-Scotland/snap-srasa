@@ -84,7 +84,10 @@ conflict_prefer('first','dplyr')
 conflict_prefer('last', 'dplyr')
 
 # Function
-list.files("./02_setup/", full.names = TRUE) %>% 
+list.files(c("./02_setup",
+             "./05_utilities"),
+           pattern = "*.[rR]",
+           full.names = TRUE) %>% 
   walk(source)
 
 # Project screen

@@ -1,0 +1,35 @@
+####################################{titlepadding}.
+#### SRASA Management Report - {title} ####.
+####################################{titlepadding}.
+
+#Author: {author}
+#Date: {date}
+
+# Description
+
+### UI -------------------------------------------------------------------------
+
+{modname}_ui <- function(id) {{
+  ns <- NS(id)
+  tagList(
+    
+  )
+}}
+
+### Server ---------------------------------------------------------------------
+
+{modname}_server <- function(id) {{
+  moduleServer(
+    id,
+    function(input, output, session) {{
+      
+    }}
+  )
+}}
+
+
+### Usage ----------------------------------------------------------------------
+
+# Document proper usage below (required arguments, etc)
+# {modname}_ui(id = "{name}")
+# {modname}_server(id = "{name}")
