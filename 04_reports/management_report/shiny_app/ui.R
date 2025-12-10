@@ -12,9 +12,10 @@ ui <- page_navbar(
   fillable = FALSE,
   
   #nav_panel(title = "Introduction", p_introduction),
-  p_utilisation,
-  p_specialty,
-  p_equity,
+  nav_panel(title = "Utilisation", p_utilisation),
+  nav_panel(title = "Specialty Access", p_specialty),
+  nav_panel(title = "Patient Equity", p_equity),
+  nav_panel(title = "Data Quality", p_dataquality)
   #nav_panel(title = "Outcome", p_outcome)
   # 
   # navset_pill_list(

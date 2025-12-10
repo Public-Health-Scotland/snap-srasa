@@ -84,6 +84,9 @@ equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet"))
 #equity_specsday <- read_parquet(paste0(mgmt_data_dir, "equity_specsday.parquet"))
 
+#### Data Quality data ----
+dq_compprocs <- read_parquet(paste0(mgmt_data_dir, "dq_compprocs.parquet"))
+
 #### Outcome data ----
 
 #### Text ----
