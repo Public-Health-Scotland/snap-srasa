@@ -44,6 +44,14 @@ p_equity <- nav_panel( #page_sidebar for controls in sidebar
          
          equity_simd_ui("equity_simd")),
     
+    card(
+      full_screen = FALSE,
+      fill = FALSE,
+      card_header(paste0("Figure X: Proportion of procedures performed robotically by specialty and 
+              health board of patient residence (", start_date, " - ", latest_date, ")")),
+      equity_resfunnel_ui(id = "resfunnel")
+    ),
+    
     # card(full_screen = FALSE,
     #      fill = FALSE,
     #      card_header(paste0("Figure X: Total utilisation of surgical robots by 

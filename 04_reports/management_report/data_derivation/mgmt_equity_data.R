@@ -88,7 +88,8 @@ long_data <- ras_ph1_data %>%
   left_join(phase1_procs, by = join_by(ph1_proc_code == code)) %>% 
   select(upi_number, cis_marker, link_no, sex, op_year, op_mth_year, op_qt, 
          first_admit_date, last_discharge_date, age_in_years, age_group, 
-         simd_quintile, urban_rural_6, hospital_name, hosp_health_board, 
+         simd_quintile, urban_rural_6, res_health_board,
+         hospital_name, hosp_health_board, 
          hosp_has_robot, op_no, ph1_proc_code, proc_date, proc_approach, 
          proc_approach_binary, proc_type, code_specialty) %>% 
   
@@ -149,6 +150,31 @@ write_parquet(equity_procspec, paste0(data_dir, "management_report/equity_procsp
 #   ungroup() 
 # 
 # write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
+
+
+### Geographical equity -----------------------------------------------------
+#### Proportion robotic of phas1 procs by specialty and patient residence HB
+equity_resprop <- long_data %>%
+  filter(proc_date >= start_date & 
+           proc_date < latest_date) %>% 
+  group_by(res_health_board, op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  group_by(res_health_board, op_mth_year, op_year, proc_approach_binary) %>% 
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(code_specialty, ~"All"),
+                      .groups = "drop")) %>%
+  ungroup() %>%
+  pivot_wider(values_from = n,
+              names_from = proc_approach_binary,
+              values_fill = 0) %>%
+  mutate(n = RAS + `Non-RAS`,
+         prop = RAS / n) %>%
+  ungroup()
+
+write_parquet(equity_resprop, paste0(data_dir, "management_report/equity_resprop.parquet"))
+
 
 ### Patient characteristics ----------------------------------------------------
 ##### Age and Sex of patients accessing robotics -------------------------------
