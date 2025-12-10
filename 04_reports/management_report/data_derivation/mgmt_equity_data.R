@@ -36,7 +36,7 @@ ras_cand_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extrac
          cis_outcome = case_when(any(discharge == 2) ~ 'dead',
                                  .default = 'alive'), #get admission and discharge date for each stay plus outcome from cis
          op_year = format(as.Date(min(date_of_main_operation), format="%Y-%m-%d"),"%Y"),
-         op_mth_year = format(as.Date(min(date_of_main_operation), format="%Y-%m-%d"),"%Y-%m"),
+         op_mth_year = floor_date(date_of_main_operation, "month"), #as.Date(format(as.Date(min(date_of_main_operation), format="%Y-%m-%d"),"%Y-%m")),
          op_qt = lubridate::quarter(as.Date(min(date_of_main_operation), format="%Y-%m-%d"),with_year = T)) %>% 
   ungroup()
 
@@ -110,25 +110,27 @@ equity_procspec <- long_data %>%
   bind_rows(summarise(.,
                       across(where(is.numeric), sum),
                       across(hospital_name, ~"All"),
-                      .groups = "drop")) 
+                      .groups = "drop")) %>% 
+  ungroup()
 
 write_parquet(equity_procspec, paste0(data_dir, "management_report/equity_procspec.parquet"))
 
 ##### Weekly no. procs by specialty and location, shown monthly ----------------
 #until i can figure out mean no per spec per day of the week per month
-equity_specsday <- long_data %>%
-  filter(proc_date >= start_date & 
-           proc_date < latest_date) %>% 
-  group_by(hospital_name, op_mth_year, op_year, proc_date, code_specialty, proc_approach_binary) %>% 
-  summarise(n = n()) %>% 
-  ungroup() %>% 
-  group_by(op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
-  bind_rows(summarise(.,
-                      across(where(is.numeric), sum),
-                      across(hospital_name, ~"All"),
-                      .groups = "drop")) 
-
-write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsday.parquet"))
+# equity_specsday <- long_data %>%
+#   filter(proc_date >= start_date & 
+#            proc_date < latest_date) %>% 
+#   group_by(hospital_name, op_mth_year, op_year, proc_date, code_specialty, proc_approach_binary) %>% 
+#   summarise(n = n()) %>% 
+#   ungroup() %>% 
+#   group_by(op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
+#   bind_rows(summarise(.,
+#                       across(where(is.numeric), sum),
+#                       across(hospital_name, ~"All"),
+#                       .groups = "drop")) %>% 
+#   ungroup()
+# 
+# write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsday.parquet"))
 
 ##### Mean number of surgeries per day of the week, monthly --------------------
 # equity_specsday <- long_data %>% # i don't think this is quite doing what I want it to
@@ -153,9 +155,20 @@ write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsd
 equity_agesex <- long_data %>% 
   filter(proc_date >= start_date & 
            proc_date < latest_date) %>% # last 12 months
-  group_by(age_group, sex, proc_approach_binary) %>% # add in ability to filter by specialty and hospital with 'all' options for both
+  group_by(hospital_name, code_specialty, age_group, sex, proc_approach_binary) %>% # add in ability to filter by specialty and hospital with 'all' options for both
   summarise(n_age_sex = n()) %>% 
-  group_by(age_group, sex) %>% 
+  group_by(code_specialty, age_group, sex, proc_approach_binary) %>%
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(hospital_name, ~"All"),
+                      .groups = "drop")) %>% 
+  ungroup() %>% 
+  group_by(hospital_name, age_group, sex, proc_approach_binary) %>%
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(code_specialty, ~"All"),
+                      .groups = "drop")) %>% 
+  group_by(hospital_name, code_specialty, age_group, sex) %>% 
   mutate(tot_procs = sum(n_age_sex),
          app_prop = round(n_age_sex/tot_procs*100, 2))
 

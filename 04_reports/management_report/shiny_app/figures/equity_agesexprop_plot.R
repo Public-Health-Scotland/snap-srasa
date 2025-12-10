@@ -13,6 +13,14 @@
 equity_agesexprop_ui <- function(id) {
   ns <- NS(id)
   tagList(
+    selectInput(ns("hospital"),
+                label = "Hospital",
+                choices = unique(equity_agesex$hospital_name),
+                selected = "All"),
+    selectInput(ns("specialty"),
+                label = "Surgical Specialty",
+                choices = unique(equity_agesex$code_specialty),
+                selected = "All"),
     withSpinner(girafeOutput(ns("equity_agesexprop"),
                              width = "auto", height = "auto"))
   )
@@ -33,7 +41,9 @@ equity_agesexprop_server <- function(id) {
         
         chart_data <- chart_data %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
-                 x = "90+")
+                 x = "90+") %>% 
+          filter(hospital_name == input$hospital,
+                 code_specialty == input$specialty)
         
         equity_agesexprop_plot <- ggplot(data = chart_data) +
           geom_bar_interactive(aes(x = age_group, y = app_prop, fill = proc_approach_binary,

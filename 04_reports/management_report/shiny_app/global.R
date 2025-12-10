@@ -58,6 +58,15 @@ hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
                   "Western General Hospital" = "#A285D1",
                   "Other Hospital Listed" = "#3D3D3D")
 
+spec_colours <- c("colorectal" = "#12436D",
+                  "ENT" = "#28A197",
+                  "gynaecology" = "#801650",
+                  "thoracic" = "#F46A25",
+                  "urology" = "#A285D1",
+                  "gastroenterology" = "#3E8ECC",
+                  "hepatobiliary" = "#3F085C",
+                  "other surgical specialty" = "#3D3D3D")
+
 ### Read in data ---------------------------------------------------------------
 
 #### Utilisation data ----
@@ -71,7 +80,7 @@ equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
 # equity_urbrural <- read_parquet(paste0(mgmt_data_dir, "equity_urbrural.parquet"))
 # equity_pemc <- read_parquet(paste0(mgmt_data_dir, "equity_pemc.parquet"))
 equity_procspec <- read_parquet(paste0(mgmt_data_dir, "equity_procspec.parquet"))
-equity_specsday <- read_parquet(paste0(mgmt_data_dir, "equity_specsday.parquet"))
+#equity_specsday <- read_parquet(paste0(mgmt_data_dir, "equity_specsday.parquet"))
 
 #### Outcome data ----
 
