@@ -48,23 +48,17 @@ equity_agesex_server <- function(id) {
         chart_data <- chart_data %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
                  x = "90+",
-                 res_health_board = factor(res_health_board, levels = hb_order)) 
+                 res_health_board = factor(res_health_board, levels = hb_order),
+                 n_age_sex = case_when(sex == "Male" ~ -1*n_age_sex,
+                               .default = n_age_sex))
         
         equity_agesex_plot <- ggplot(data = chart_data) +
-          geom_bar_interactive(aes(x = factor(age_group), y = -n_age_sex, fill = sex,
-                                   tooltip = paste0("Sex: ", sex,
-                                                    "\n Age Group: ", age_group,
-                                                    "\n Number of patients: ", n_age_sex),
-                                   data_id = age_group), 
-                               stat = "identity", width=0.9, 
-                               subset(chart_data, chart_data$sex == "Male"))+
           geom_bar_interactive(aes(x = factor(age_group), y = n_age_sex, fill = sex,
                                    tooltip = paste0("Sex: ", sex,
                                                     "\n Age Group: ", age_group,
-                                                    "\n Number of patients: ", n_age_sex),
-                                   data_id = age_group), 
-                               stat = "identity", width=0.9, 
-                               subset(chart_data, chart_data$sex == "Female"))+
+                                                    "\n Number of patients: ", abs(n_age_sex)),
+                                   data_id = age_group),
+                               stat = "identity", width=0.9) +
           geom_text_interactive(aes(x = x, y = y, label = sex, hjust = 1)) +
           scale_y_continuous(breaks = seq(y_limit_neg, y_limit, round(y_limit/5, 0)),
                              limits = c(y_limit_neg, y_limit),

@@ -40,7 +40,9 @@ equity_agesexprop_server <- function(id) {
         chart_data <- equity_agesex %>% 
           mutate(y = ifelse(sex == "Male", y_limit_neg, y_limit),
                  x = "90+",
-                 res_health_board = factor(res_health_board, levels = hb_order)) %>% 
+                 res_health_board = factor(res_health_board, levels = hb_order),
+                 app_prop = case_when(sex == "Male" ~ -1*app_prop,
+                                       .default = app_prop)) %>% 
           filter(res_health_board == input$healthboard,
                  code_specialty == input$specialty)
         
@@ -50,19 +52,9 @@ equity_agesexprop_server <- function(id) {
                                                     "\n Surgical approach: ", proc_approach_binary,
                                                     "\n Age Group: ", age_group,
                                                     "\n Number of patients: ", n_age_sex,
-                                                    "\n % of patients: ", app_prop),
+                                                    "\n % of patients: ", abs(app_prop), "%"),
                                    data_id = age_group), 
-                               stat = "identity", width=0.9,# colour="black",
-                               subset(chart_data, chart_data$sex == "Female"))+
-          geom_bar_interactive(aes(x = factor(age_group), y = -app_prop, fill = proc_approach_binary,
-                                   tooltip = paste0("Sex: ", sex,
-                                                    "\n Surgical approach: ", proc_approach_binary,
-                                                    "\n Age Group: ", age_group,
-                                                    "\n Number of patients: ", n_age_sex,
-                                                    "\n % of patients: ", app_prop),
-                                   data_id = age_group), 
-                               stat = "identity", width=0.9,# colour="black",
-                               subset(chart_data, chart_data$sex == "Male"))+
+                               stat = "identity", width=0.9) +
           geom_text_interactive(aes(x = x, y = y, label = sex, hjust = 1)) +
           scale_y_continuous(breaks = seq(y_limit_neg+10, y_limit-10, 20),
                              limits = c(y_limit_neg, y_limit),
