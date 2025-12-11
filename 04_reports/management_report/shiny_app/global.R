@@ -79,6 +79,7 @@ equity_agemean <- read_parquet(paste0(mgmt_data_dir, "equity_agemean.parquet"))
 equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
 # equity_urbrural <- read_parquet(paste0(mgmt_data_dir, "equity_urbrural.parquet"))
 # equity_pemc <- read_parquet(paste0(mgmt_data_dir, "equity_pemc.parquet"))
+equity_resprop <- read_parquet(paste0(mgmt_data_dir, "equity_resprop.parquet"))
 
 #### Specialty data ----
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet"))
