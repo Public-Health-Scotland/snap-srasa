@@ -7,23 +7,15 @@
 
 ui <- page_navbar(
   title = "Scottish Robotic-Assisted Surgery Audit (SRASA) - Management Information",
-  bg = "#80BCEA",
-  inverse = TRUE,
+  navbar_options = navbar_options(
+    bg = "#80BCEA",
+    theme = "light"
+  ),
   fillable = FALSE,
   
-  #nav_panel(title = "Introduction", p_introduction),
-  nav_panel(title = "Utilisation", p_utilisation),
-  nav_panel(title = "Specialty Access", p_specialty),
-  nav_panel(title = "Patient Equity", p_equity),
-  nav_panel(title = "Data Quality", p_dataquality)
-  #nav_panel(title = "Outcome", p_outcome)
-  # 
-  # navset_pill_list(
-  # 
-  #     p_introduction,
-  #     p_utilisation,
-  #     p_equity,
-  #     p_outcome
-  #     
-  #   )
+  p_utilisation,
+  p_specialty,
+  p_equity,
+  p_dataquality,
+
 )
