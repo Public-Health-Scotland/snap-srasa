@@ -8,6 +8,8 @@
 ### source scripts -------------------------------------------------------------
 list.files("./02_setup/", full.names = TRUE) %>% 
   walk(source)
+list.files("./03_clean_modify/", full.names = TRUE) %>% 
+  walk(source)
 
 ### extract smr01 data ---------------------------------------------------------
 extract_smr01_data() %>% 
