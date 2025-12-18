@@ -17,8 +17,11 @@ subset_smr01_extract <- function(df,
   #' @param df - smr01 extract to filter
   #' @param group_to - group records to CIS (continuous inpatient stay) level, 
   #' or to retain all records pertaining to that patient
+  #' @param filter_by - filter to be applied - "ras" for any procedures
+  #'  tagged as being performed with RAS, "candidate" for any procedures
+  #'   in phase 1 or 2 list, RAS or not
   #' 
-  #' @usage - subset_smr01_extract(df, group+to = "cis"/"patient")
+  #' @usage - subset_smr01_extract(df, group_to = "cis"/"patient", filter_by = "ras"/"candidate")
   #'
   #' @details - when 'cis' selected, groups by smr01 link_no and cis_marker, then 
   #' filters to retain only continuous inpatient stays where a RAS procedure was 
