@@ -34,4 +34,5 @@ source(paste0(output_dir, "mgmt_report_plots.R"))
 
 # report ------------------------------------------------------------------
 
-produce_report("Greater Glasgow & Clyde")
+test_report <- produce_report("Greater Glasgow & Clyde")
+#htmltools::save_html(test_report, "test_report.html")

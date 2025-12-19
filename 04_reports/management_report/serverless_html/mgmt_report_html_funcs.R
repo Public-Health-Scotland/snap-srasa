@@ -26,24 +26,22 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   }
   
   ##### Colours ----
-  hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
-                    "Glasgow Royal Infirmary" = "#94AABD",
-                    "Golden Jubilee University National Hospital" = "#28A197",
-                    "Ninewells Hospital" = "#B4DEDB",
-                    "Queen Elizabeth University Hospital" = "#801650",
-                    "Raigmore Hospital" = "#CCA2B9",
-                    "Royal Infirmary of Edinburgh at Little France" = "#F46A25",
-                    "St John's Hospital" = "#FBC3A8",
-                    "University Hospital Crosshouse" = "#3E8ECC",
-                    "University Hospital Hairmyres" = "#A8CCE8",
-                    "Victoria Hospital" = "#3F085C",
-                    "Western General Hospital" = "#A285D1",
-                    "Other Hospital Listed" = "#3D3D3D")
+  # hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
+  #                   "Glasgow Royal Infirmary" = "#94AABD",
+  #                   "Golden Jubilee University National Hospital" = "#28A197",
+  #                   "Ninewells Hospital" = "#B4DEDB",
+  #                   "Queen Elizabeth University Hospital" = "#801650",
+  #                   "Raigmore Hospital" = "#CCA2B9",
+  #                   "Royal Infirmary of Edinburgh at Little France" = "#F46A25",
+  #                   "St John's Hospital" = "#FBC3A8",
+  #                   "University Hospital Crosshouse" = "#3E8ECC",
+  #                   "University Hospital Hairmyres" = "#A8CCE8",
+  #                   "Victoria Hospital" = "#3F085C",
+  #                   "Western General Hospital" = "#A285D1",
+  #                   "Other Hospital Listed" = "#3D3D3D")
   
-  # hb_hosp_colours <- ifelse(
-  #   names(hosp_colours) %in% hospitals,
-  #   hosp_colours,
-  #   "#3D3D3D")
+  hosp_colours <- phs_colour_values[1:length(hospitals)] |>
+    setNames(hospitals)
   
   spec_colours <- c("colorectal" = "#12436D",
                     "ENT" = "#28A197",
@@ -57,7 +55,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   
   ##### html
   report_html <- page_navbar(
-    title = "Scottish Robotic-Assisted Surgery Audit (SRASA) - Management Information",
+    title = "Scottish Robotic-Assisted Surgery Audit - Management Report",
     navbar_options = navbar_options(
       bg = "#80BCEA",
       theme = "light"
@@ -117,7 +115,7 @@ ggiraph_card <- function(title, plot){
       girafe(ggobj = plot,
              options = list(
                opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
-               opts_hover(css = "opacity:0.8", nearest_distance = 100),
+               opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
              width_svg = 9)
@@ -134,7 +132,7 @@ ggiraph_nav <- function(tab_name, title, plot){
       girafe(ggobj = plot,
              options = list(
                opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
-               opts_hover(css = "opacity:0.8", nearest_distance = 100),
+               opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
              width_svg = 9)
@@ -146,3 +144,22 @@ ggiraph_nav <- function(tab_name, title, plot){
 capitalise_first <- function(x) {
   paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
 }
+
+
+# save_tags <- function (tags, file, selfcontained = F, libdir = NULL) 
+# {
+#   if (is.null(libdir)) {
+#     libdir <- paste(tools::file_path_sans_ext(basename(file)), 
+#                     "_files", sep = "")
+#   }
+#   htmltools::save_html(tags, file = file, libdir = libdir)
+#   if (selfcontained) {
+#     if (!rmarkdown::pandoc_available()) {
+#       stop("Saving a widget with selfcontained = TRUE requires pandoc. For details see:\n",
+#            "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
+#     }
+#     rmarkdown::pandoc_self_contained_html(file, file)
+#     unlink(libdir, recursive = TRUE)
+#   }
+#   return(file)
+# }
