@@ -16,6 +16,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     latest_date <- as_date(latest_date)
   }
   
+  latest_month <- latest_date %m-% months(1)
   
   if(is.null(start_date)){
     start_date <- latest_date %>% 
@@ -39,6 +40,11 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Western General Hospital" = "#A285D1",
                     "Other Hospital Listed" = "#3D3D3D")
   
+  hb_hosp_colours <- ifelse(
+    names(hosp_colours) %in% hospitals,
+    hosp_colours,
+    "#3D3D3D")
+  
   spec_colours <- c("colorectal" = "#12436D",
                     "ENT" = "#28A197",
                     "gynaecology" = "#801650",
@@ -58,12 +64,44 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     ),
     fillable = FALSE,
     nav_panel(
-      "P1",
-      ggiraph_card(
-        title = str_glue("Total number of RAS procedures monthly by hospital ({start_date} - {latest_date})"),
-        plot = make_plot_util_procsmth(hospitals, hosp_colours)
+      "Utilisation",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        ggiraph_card(
+          title = str_glue("Total number of RAS procedures monthly by hospital ({start_date} - {latest_date})"),
+          plot = make_plot_util_procsmth(hospitals, hosp_colours)
+        ),
+        ggiraph_card(
+          title = str_glue("Mean no. RAS procedures performed per day, by hospital ({format(latest_month, '%B %Y')})"),
+          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours)
+        )
       )
-    )
+    ),
+    nav_panel(
+      "Specialty access",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        ggiraph_card(
+          title = str_glue("Total number of RAS procedures monthly by hospital ({start_date} - {latest_date})"),
+          plot = make_plot_util_procsmth(hospitals, hosp_colours)
+        ),
+        do.call(navset_card_tab,
+          args = map(
+            unique(spec_procsmth$code_specialty),
+            ~ggiraph_nav(capitalise_first(.x),
+                         title = str_glue(
+                           "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
+                           spec = .x),
+                         make_plot_spec_funnel(month = latest_month,
+                                               specialty = .x,
+                                               hosp_colours = hb_hosp_colours)
+            )
+          )
+        )
+      )
+    ),
+    nav_spacer(),
+    nav_item(hb)
   )
   
   return(report_html)
@@ -80,7 +118,31 @@ ggiraph_card <- function(title, plot){
              options = list(
                opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
                opts_hover(css = "opacity:0.8", nearest_distance = 100),
-               opts_hover_inv(css = "opacity:0.4")))
+               opts_hover_inv(css = "opacity:0.4")),
+             height_svg = 6,
+             width_svg = 9)
     )
   )
+}
+
+ggiraph_nav <- function(tab_name, title, plot){
+  nav_panel(
+    tab_name,
+    card_title(title),
+    card_body(
+      fillable=FALSE,
+      girafe(ggobj = plot,
+             options = list(
+               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_hover(css = "opacity:0.8", nearest_distance = 100),
+               opts_hover_inv(css = "opacity:0.4")),
+             height_svg = 6,
+             width_svg = 9)
+    )
+  )
+}
+
+
+capitalise_first <- function(x) {
+  paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x)))
 }
