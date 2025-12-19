@@ -16,7 +16,10 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
          fill = NULL,
          caption = "Data from SMR01",
          subtitle = paste0())+ 
-    scale_fill_manual(values = hosp_colours)+
+    scale_fill_manual(values = hosp_colours) +
+    guides(
+      fill = guide_legend(nrow = ceiling(length(unique(chart_data$hospital_name_grp))/2)) 
+    ) +
     theme_phs()
   
   return(util_procsmth_plot)
