@@ -54,6 +54,32 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
 
 ## Spec access
 
+make_plot_spec_procsmth <- function(hospitals, spec_colours){
+  chart_data <- spec_procsmth %>% 
+    filter(proc_approach_binary == "RAS") %>% 
+    mutate(op_mth_year = format(op_mth_year, "%Y-%m")) %>% 
+    filter(hospital_name %in% hospitals) 
+  
+  spec_procsmth_plot <- ggplot(data = chart_data, 
+                               aes(x = op_mth_year, y = n, fill = code_specialty,
+                                   tooltip = paste0("Hospital Location: ", hospital_name,
+                                                    "\n Surgical Specialty; ", code_specialty,
+                                                    "\n No. RAS procedures: ", n,
+                                                    "\n Month: ", op_mth_year),
+                                   data_id = op_mth_year)) +
+    geom_bar_interactive(stat = "identity")+
+    labs(x = "Month", 
+         y = "Number of cases", 
+         fill = "Surgical Specialty",
+         caption = "Data from SMR01",
+         subtitle = paste0("Patients receiving RAS only"))+ 
+    scale_fill_manual(values = spec_colours) +
+    theme_phs() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    facet_wrap(~hospital_name)
+  
+  return(spec_procsmth_plot)
+}
 
 make_plot_spec_funnel <- function(month, specialty, hosp_colours){
   chart_data <- spec_procsmth |>

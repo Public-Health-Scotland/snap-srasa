@@ -40,10 +40,10 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Western General Hospital" = "#A285D1",
                     "Other Hospital Listed" = "#3D3D3D")
   
-  hb_hosp_colours <- ifelse(
-    names(hosp_colours) %in% hospitals,
-    hosp_colours,
-    "#3D3D3D")
+  # hb_hosp_colours <- ifelse(
+  #   names(hosp_colours) %in% hospitals,
+  #   hosp_colours,
+  #   "#3D3D3D")
   
   spec_colours <- c("colorectal" = "#12436D",
                     "ENT" = "#28A197",
@@ -82,19 +82,19 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
-          title = str_glue("Total number of RAS procedures monthly by hospital ({start_date} - {latest_date})"),
-          plot = make_plot_util_procsmth(hospitals, hosp_colours)
+          title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({start_date} - {latest_date})"),
+          plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
         do.call(navset_card_tab,
           args = map(
-            unique(spec_procsmth$code_specialty),
+            sort(unique(spec_procsmth$code_specialty)),
             ~ggiraph_nav(capitalise_first(.x),
                          title = str_glue(
                            "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
                            spec = .x),
                          make_plot_spec_funnel(month = latest_month,
                                                specialty = .x,
-                                               hosp_colours = hb_hosp_colours)
+                                               hosp_colours = hosp_colours[names(hosp_colours) %in% hospitals])
             )
           )
         )
