@@ -3,9 +3,10 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   ##### Hospitals & Health Board
   health_board <- str_replace(hb, "and", "&") #coerce to ampersand
   hospcodes <- phsopendata::get_resource("c698f450-eeed-41a0-88f7-c1e40a568acc") |>
-    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace("and", "&"))
+    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace(" and ", " & "))
   
   hospitals <- hospcodes$HospitalName[hospcodes$HealthBoardName == health_board]
+  hospitals <- hospitals[hospitals %in% util_procsday$hospital_name_grp]
   
   
   ##### Dates ----
@@ -114,7 +115,12 @@ ggiraph_card <- function(title, plot){
       fillable=FALSE,
       girafe(ggobj = plot,
              options = list(
-               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_tooltip(css = "
+                              border-radius:5px; 
+                              padding:5px;
+                              text-shadow: 0 0 1px white, 0 0 1px white;
+                              ",
+                            opacity = 1, use_fill = TRUE),
                opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
@@ -131,7 +137,12 @@ ggiraph_nav <- function(tab_name, title, plot){
       fillable=FALSE,
       girafe(ggobj = plot,
              options = list(
-               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_tooltip(css = "
+                              border-radius:5px; 
+                              padding:5px;
+                              text-shadow: 0 0 1px white, 0 0 1px white;
+                              ",
+                            opacity = 1, use_fill = TRUE),
                opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
