@@ -157,20 +157,61 @@ capitalise_first <- function(x) {
 }
 
 
-# save_tags <- function (tags, file, selfcontained = F, libdir = NULL) 
-# {
-#   if (is.null(libdir)) {
-#     libdir <- paste(tools::file_path_sans_ext(basename(file)), 
-#                     "_files", sep = "")
-#   }
-#   htmltools::save_html(tags, file = file, libdir = libdir)
-#   if (selfcontained) {
-#     if (!rmarkdown::pandoc_available()) {
-#       stop("Saving a widget with selfcontained = TRUE requires pandoc. For details see:\n",
-#            "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
-#     }
-#     rmarkdown::pandoc_self_contained_html(file, file)
-#     unlink(libdir, recursive = TRUE)
-#   }
-#   return(file)
-# }
+save_self_contained_html <- function(taglist, output_filepath) {
+  # Normalize output path
+  output_filepath <- xfun::normalize_path(output_filepath)
+  
+  # Create a temporary directory for intermediate files
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+  
+  # Temporary HTML file inside temp_dir
+  temp_html <- file.path(temp_dir, "temp.html")
+  
+  # Save the taglist as HTML (with /libs folder if needed)
+  htmltools::save_html(taglist, file = temp_html, libdir = file.path(temp_dir, "libs"))
+  
+  # Remove <!DOCTYPE> lines for pandoc
+  input_lines <- readLines(temp_html, warn = FALSE)
+  writeLines(input_lines[!grepl("<!DOCTYPE", input_lines, fixed = TRUE)], temp_html)
+  
+  # Create a minimal template for pandoc
+  template <- tempfile(fileext = ".html")
+  on.exit(unlink(template), add = TRUE)
+  xfun::write_utf8("$body$", template)
+  
+  # Determine pandoc format
+  from <- if (rmarkdown::pandoc_available("1.17")) "markdown_strict" else "markdown"
+  
+  # Convert to self-contained HTML
+  rmarkdown::pandoc_convert(
+    input = temp_html,
+    from = from,
+    output = output_filepath,
+    options = c("--embed-resources", "--standalone", "--template", template)
+  )
+  
+  invisible(output_filepath)
+}
+
+batch_reports <- function(health_boards, date_from, date_to, output_dir) {
+  #create output directory if it doesn't yet exist
+  if(!dir.exists(output_dir)) {
+    dir.create(output_dir)
+  }
+  
+  health_boards |>
+    walk(~produce_report(.x, date_from, date_to) |>
+          save_self_contained_html(paste0(output_dir,
+                                          "/srasa_mgmt_report_",
+                                          str_to_snake(
+                                            paste0(.x,
+                                                   format(date_from, "%b%y"),
+                                                   format(date_to, "%b%y")
+                                                   )
+                                          ),
+                                          ".html"
+          ))
+    )
+}
