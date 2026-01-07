@@ -12,7 +12,8 @@ library(snappack)
 # folders -----------------------------------------------------------------
 
 mgmt_data_dir <- paste0(data_dir, "management_report/")
-output_dir <- "./04_reports/management_report/serverless_html/"
+script_dir <- "./04_reports/management_report/serverless_html/"
+output_dir <- "/conf/quality/srasa/(04) Project Reports/Monthly Reports/Management Report/"
 
 # data --------------------------------------------------------------------
 
@@ -29,10 +30,30 @@ spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet"))
 
 # functions ---------------------------------------------------------------
 
-source(paste0(output_dir, "mgmt_report_html_funcs.R"))
-source(paste0(output_dir, "mgmt_report_plots.R"))
+source(paste0(script_dir, "mgmt_report_html_funcs.R"))
+source(paste0(script_dir, "mgmt_report_plots.R"))
 
 # report ------------------------------------------------------------------
 
-test_report <- produce_report("Greater Glasgow & Clyde")
-#htmltools::save_html(test_report, "test_report.html")
+#test_report <- produce_report("Greater Glasgow & Clyde", "2024-10-01", "2025-10-01")
+#save_self_contained_html(test_report, paste0(output_dir, "test_new_func.html"))
+
+date_to <- as.Date("2025-10-01")
+date_from <- date_to %m-% months(12)
+health_boards <- list(
+  'Ayrshire & Arran',
+  'Fife',
+  'Grampian',
+  'Greater Glasgow & Clyde',
+  'Highland',
+  'Lanarkshire',
+  'Lothian',
+  'Tayside'
+)
+
+batch_reports(
+  health_boards,
+  date_from,
+  date_to,
+  paste0(output_dir, format(date_to, "%B %y"))
+)

@@ -3,9 +3,10 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   ##### Hospitals & Health Board
   health_board <- str_replace(hb, "and", "&") #coerce to ampersand
   hospcodes <- phsopendata::get_resource("c698f450-eeed-41a0-88f7-c1e40a568acc") |>
-    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace("and", "&"))
+    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace(" and ", " & "))
   
   hospitals <- hospcodes$HospitalName[hospcodes$HealthBoardName == health_board]
+  hospitals <- hospitals[hospitals %in% util_procsday$hospital_name_grp]
   
   
   ##### Dates ----
@@ -114,7 +115,12 @@ ggiraph_card <- function(title, plot){
       fillable=FALSE,
       girafe(ggobj = plot,
              options = list(
-               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_tooltip(css = "
+                              border-radius:5px; 
+                              padding:5px;
+                              text-shadow: 0 0 1px white, 0 0 1px white;
+                              ",
+                            opacity = 1, use_fill = TRUE),
                opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
@@ -131,7 +137,12 @@ ggiraph_nav <- function(tab_name, title, plot){
       fillable=FALSE,
       girafe(ggobj = plot,
              options = list(
-               opts_tooltip(css = "border-radius:5px; padding:5px", opacity = 1, use_fill = TRUE),
+               opts_tooltip(css = "
+                              border-radius:5px; 
+                              padding:5px;
+                              text-shadow: 0 0 1px white, 0 0 1px white;
+                              ",
+                            opacity = 1, use_fill = TRUE),
                opts_hover(css = "opacity:0.8", nearest_distance = 10),
                opts_hover_inv(css = "opacity:0.4")),
              height_svg = 6,
@@ -146,20 +157,61 @@ capitalise_first <- function(x) {
 }
 
 
-# save_tags <- function (tags, file, selfcontained = F, libdir = NULL) 
-# {
-#   if (is.null(libdir)) {
-#     libdir <- paste(tools::file_path_sans_ext(basename(file)), 
-#                     "_files", sep = "")
-#   }
-#   htmltools::save_html(tags, file = file, libdir = libdir)
-#   if (selfcontained) {
-#     if (!rmarkdown::pandoc_available()) {
-#       stop("Saving a widget with selfcontained = TRUE requires pandoc. For details see:\n",
-#            "https://github.com/rstudio/rmarkdown/blob/master/PANDOC.md")
-#     }
-#     rmarkdown::pandoc_self_contained_html(file, file)
-#     unlink(libdir, recursive = TRUE)
-#   }
-#   return(file)
-# }
+save_self_contained_html <- function(taglist, output_filepath) {
+  # Normalize output path
+  output_filepath <- xfun::normalize_path(output_filepath)
+  
+  # Create a temporary directory for intermediate files
+  temp_dir <- tempfile()
+  dir.create(temp_dir)
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
+  
+  # Temporary HTML file inside temp_dir
+  temp_html <- file.path(temp_dir, "temp.html")
+  
+  # Save the taglist as HTML (with /libs folder if needed)
+  htmltools::save_html(taglist, file = temp_html, libdir = file.path(temp_dir, "libs"))
+  
+  # Remove <!DOCTYPE> lines for pandoc
+  input_lines <- readLines(temp_html, warn = FALSE)
+  writeLines(input_lines[!grepl("<!DOCTYPE", input_lines, fixed = TRUE)], temp_html)
+  
+  # Create a minimal template for pandoc
+  template <- tempfile(fileext = ".html")
+  on.exit(unlink(template), add = TRUE)
+  xfun::write_utf8("$body$", template)
+  
+  # Determine pandoc format
+  from <- if (rmarkdown::pandoc_available("1.17")) "markdown_strict" else "markdown"
+  
+  # Convert to self-contained HTML
+  rmarkdown::pandoc_convert(
+    input = temp_html,
+    from = from,
+    output = output_filepath,
+    options = c("--embed-resources", "--standalone", "--template", template)
+  )
+  
+  invisible(output_filepath)
+}
+
+batch_reports <- function(health_boards, date_from, date_to, output_dir) {
+  #create output directory if it doesn't yet exist
+  if(!dir.exists(output_dir)) {
+    dir.create(output_dir)
+  }
+  
+  health_boards |>
+    walk(~produce_report(.x, date_from, date_to) |>
+          save_self_contained_html(paste0(output_dir,
+                                          "/srasa_mgmt_report_",
+                                          str_to_snake(
+                                            paste0(.x,
+                                                   format(date_from, "%b%y"),
+                                                   format(date_to, "%b%y")
+                                                   )
+                                          ),
+                                          ".html"
+          ))
+    )
+}
