@@ -15,8 +15,6 @@ mgmt_data_dir <- paste0(data_dir, "management_report/")
 script_dir <- "./04_reports/management_report/serverless_html/"
 output_dir <- "/conf/quality/srasa/(04) Project Reports/Monthly Reports/Management Report/"
 
-
-
 # functions ---------------------------------------------------------------
 
 source(paste0(script_dir, "mgmt_report_html_funcs.R"))
@@ -31,6 +29,7 @@ health_boards <- list(
   'Fife',
   'Grampian',
   'Greater Glasgow & Clyde',
+  'GJNH',
   'Highland',
   'Lanarkshire',
   'Lothian',
@@ -52,6 +51,8 @@ equity_resprop <- read_parquet(paste0(mgmt_data_dir, "equity_resprop.parquet"))
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet")) |>
   filter(op_mth_year < date_to, op_mth_year >= date_from)
 
+# hospital lookups
+hospitals <- read_csv(paste0(lookup_dir, "NHSScotland_hospitals.csv"))
 
 # reports -----------------------------------------------------------------
 

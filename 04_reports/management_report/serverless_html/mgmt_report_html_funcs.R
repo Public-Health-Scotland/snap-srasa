@@ -1,12 +1,9 @@
 produce_report <- function(hb, start_date = NULL, latest_date = NULL){
  
   ##### Hospitals & Health Board
-  health_board <- str_replace(hb, " and", "&") #coerce to ampersand
-  hospcodes <- phsopendata::get_resource("c698f450-eeed-41a0-88f7-c1e40a568acc") |>
-    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace(" and ", " & "))
+  hb <- str_replace(hb, " and", "&") #coerce to ampersand
   
-  hospitals <- hospcodes$HospitalName[hospcodes$HealthBoardName == health_board]
-  hospitals <- hospitals[hospitals %in% util_procsday$hospital_name_grp]
+  hospitals <- hospitals |> filter(health_board == hb, hosp_has_robot == "Yes")
   
   ##### Dates ----
   if(is.null(latest_date)){
