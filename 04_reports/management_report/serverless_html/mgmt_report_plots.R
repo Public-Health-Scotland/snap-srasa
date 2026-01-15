@@ -91,6 +91,46 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
   return(spec_procsmth_plot)
 }
 
+make_plot_candidate_procs <- function(hospitals, specialty){
+  chart_data <- spec_procsmth |>
+    mutate(op_mth_year = format(op_mth_year, "%Y-%m"),
+           hospital_name = str_remove(hospital_name, "'")) |>
+    complete(
+      hospital_name,
+      op_mth_year,
+      code_specialty,
+      proc_approach_binary,
+      fill = list(n = 0)
+    )  |>
+    filter(hospital_name %in% hospitals,
+           code_specialty == specialty)
+  
+  candidate_procs_plot <- ggplot(data = chart_data, 
+                                 aes(x = op_mth_year, y = n, fill = proc_approach_binary,
+                                     tooltip = paste0("Hospital Location: ", hospital_name,
+                                                      "\n Surgical Specialty; ", code_specialty,
+                                                      "\n Approach: ", proc_approach_binary,
+                                                      "\n No. procedures: ", n,
+                                                      "\n Month: ", op_mth_year),
+                                     data_id = op_mth_year)) +
+    geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
+    labs(x = "Month", 
+         y = "Number of procedures", 
+         fill = "Approach",
+         caption = "Data from SMR01") + 
+    scale_fill_manual(values = setNames(phs_colour_values[c(1, 11)], c("RAS", "Non-RAS"))) +
+    #coord_cartesian(ylim = c(0, max(5, max(chart_data$n, na.rm = TRUE)))) +
+    scale_y_continuous(
+      breaks = scales::breaks_width(5),
+    ) +
+    expand_limits(y = 5) +
+    theme_phs_ylines() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    facet_wrap(~hospital_name)
+  
+  return(candidate_procs_plot)
+}
+
 make_plot_spec_funnel <- function(month, specialty, hosp_colours){
   chart_data <- spec_procsmth |>
     pivot_wider(values_from = n,
@@ -124,3 +164,32 @@ make_plot_spec_funnel <- function(month, specialty, hosp_colours){
   
   return(funnel)
 }
+
+# make_res_equity_funnel <- function(month, specialty, hb_colours){
+#   chart_data <- equity_resprop |>
+#     mutate(prop = RAS / n) |>
+#     filter(res_health_board != "All") |>
+#     filter(op_mth_year == month,
+#            code_specialty == specialty)
+#   
+#   funnel <- chart_data |>
+#     ggplot(
+#       aes(x = n,
+#           y = prop,
+#           fill = res_health_board,
+#           tooltip = paste0(res_health_board,
+#                            "\nNumber of procedures: ", n,
+#                            "\nProp. performed robotically", ": ", format(prop, nsmall=2, digits = 2)),
+#           data_id = res_health_board)) +
+#     geom_funnel_lines() +
+#     scale_funnel_phs() +
+#     geom_point_interactive(size = 3, shape = 21, hover_nearest = TRUE) +
+#     scale_fill_manual(values = hb_colours,
+#                       na.value = "#3D3D3D",
+#                       guide = NULL) +
+#     labs(x="Number of patients",
+#          y="Prop. receiving RAS") +
+#     theme_phs()
+#   
+#   return(funnel)
+# }
