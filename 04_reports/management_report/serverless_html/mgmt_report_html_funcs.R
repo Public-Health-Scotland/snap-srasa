@@ -1,13 +1,9 @@
 produce_report <- function(hb, start_date = NULL, latest_date = NULL){
  
   ##### Hospitals & Health Board
-  health_board <- str_replace(hb, "and", "&") #coerce to ampersand
-  hospcodes <- phsopendata::get_resource("c698f450-eeed-41a0-88f7-c1e40a568acc") |>
-    mutate(HealthBoardName = phsmethods::match_area(HealthBoard) |> str_replace(" and ", " & "))
+  hb <- str_replace(hb, " and", "&") #coerce to ampersand
   
-  hospitals <- hospcodes$HospitalName[hospcodes$HealthBoardName == health_board]
-  hospitals <- hospitals[hospitals %in% util_procsday$hospital_name_grp]
-  
+  hospitals <- hospitals |> filter(health_board == hb, hosp_has_robot == "Yes") |> pull(hospital_name)
   
   ##### Dates ----
   if(is.null(latest_date)){
@@ -17,7 +13,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     latest_date <- as_date(latest_date)
   }
   
-  latest_month <- latest_date %m-% months(1)
+  latest_month <- latest_date %>% 
+    floor_date("month") %m-% months(1)
   
   if(is.null(start_date)){
     start_date <- latest_date %>% 
@@ -84,16 +81,27 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
           title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({start_date} - {latest_date})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
+        # do.call(navset_card_tab,
+        #   args = map(
+        #     sort(unique(spec_procsmth$code_specialty)),
+        #     ~ggiraph_nav(capitalise_first(.x),
+        #                  title = str_glue(
+        #                    "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
+        #                    spec = .x),
+        #                  make_plot_spec_funnel(month = latest_month,
+        #                                        specialty = .x,
+        #                                        hosp_colours = hosp_colours[names(hosp_colours) %in% hospitals])
+        #     )
+        #   )
+        # )
         do.call(navset_card_tab,
           args = map(
             sort(unique(spec_procsmth$code_specialty)),
             ~ggiraph_nav(capitalise_first(.x),
                          title = str_glue(
-                           "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
+                           "Number of Phase 1 {spec} procedures performed per month, by approach ({start_date} - {latest_date})",
                            spec = .x),
-                         make_plot_spec_funnel(month = latest_month,
-                                               specialty = .x,
-                                               hosp_colours = hosp_colours[names(hosp_colours) %in% hospitals])
+                         make_plot_candidate_procs(hospitals, .x)
             )
           )
         )
