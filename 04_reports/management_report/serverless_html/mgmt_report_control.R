@@ -42,6 +42,9 @@ util_procsmth <- read_parquet(paste0(mgmt_data_dir, "util_procsmth.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
 util_procsday <- read_parquet(paste0(mgmt_data_dir, "util_procsday.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
+util_procs_detail <- read_parquet(paste0(mgmt_data_dir, "util_procs_detail.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+
 
 equity_agesex <- read_parquet(paste0(mgmt_data_dir, "equity_agesex.parquet"))
 equity_agemean <- read_parquet(paste0(mgmt_data_dir, "equity_agemean.parquet"))

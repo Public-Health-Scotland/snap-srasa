@@ -107,6 +107,24 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         )
       )
     ),
+    nav_panel(
+      "Procedures",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        bslib::card(
+          bslib::card_header(str_glue("All robotic procedures ({start_date} - {latest_date})")),
+          DT::datatable(util_procs_detail |>
+                          filter(hospital_name_grp %in% hospitals) |>
+                          mutate(op_mth = format(op_mth, "%Y-%m")), # move all this to function in _plots?
+                        options = list(
+                          order = list(2, 'desc')),
+                        colnames = c("Hospital", "Month", "Specialty", "Operation type", "Operation description", "N."),
+                        rownames = FALSE,
+                        height = "100%"
+          )
+        )
+      )
+    ),
     nav_spacer(),
     nav_item(hb)
   )

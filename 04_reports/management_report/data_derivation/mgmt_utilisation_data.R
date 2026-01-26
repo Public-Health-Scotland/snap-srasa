@@ -68,3 +68,19 @@ util_procsday <- ras_util_data %>%
 
 write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
 
+
+# Detailed data for table -------------------------------------------------
+
+procs_lookup <- read_csv(paste0(lookup_dir, "all_ras_procs.csv")) |> select(op1a, op_type, opcs_desc)
+
+util_procs_detail <- ras_util_data %>% 
+  filter(ras_proc == TRUE) %>%
+  mutate(op_mth = floor_date(date_of_main_operation, "month")) %>%
+  group_by(hospital_name_grp,  op_mth, op1a, specialty_desc) %>% 
+  summarise(n = n()) %>%
+  ungroup() %>%
+  left_join(procs_lookup, by = "op1a") %>%
+  mutate(opcs_desc = iconv(opcs_desc, to = "UTF-8", sub = "")) %>%
+  select(all_of(c("hospital_name_grp", "op_mth", "specialty_desc", "op_type", "opcs_desc", "n")))
+
+write_parquet(util_procs_detail, paste0(data_dir, "management_report/util_procs_detail.parquet"))
