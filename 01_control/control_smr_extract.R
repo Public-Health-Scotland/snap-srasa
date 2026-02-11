@@ -13,10 +13,18 @@ list.files("./03_clean_modify/", full.names = TRUE) %>%
 
 ### extract smr01 data ---------------------------------------------------------
 extract_smr01_data() %>% 
+  #adjust_phase_diag() %>% 
+  #identify_cancer_diag() %>% 
   append_lookups(which_lookups = "all") %>% 
   
   # save extract
   write_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_", 
-                       format(Sys.Date(), "%Y-%m"), ".parquet"))
+                       format(Sys.Date(), "%Y-%m"), ".parquet")) #%>% 
+  # 
+  # filter(!is.na(main_op_code)) %>% 
+  # write_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min_", 
+  #                      format(Sys.Date(), "%Y-%m"), ".parquet"))
 
-### ----------------------------------------------------------------------------
+
+### compile and save intuitive data --------------------------------------------
+compile_intuitive_data()
