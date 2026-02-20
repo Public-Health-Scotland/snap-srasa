@@ -1,9 +1,10 @@
-##########################################.
-### SNAP SRASA - Monthly SMR01 extract ###
-##########################################.
+#################################################.
+### SNAP SRASA - Monthly SMR01 extract REWORK ###
+#################################################.
 
 # Bex Madden & Dylan Lewis
 # 13/11/2025
+# AMENDED 09/02/2026
 
 
 extract_smr01_data <- function(start_date = "'01-January-2023'", 
@@ -22,10 +23,7 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   #' @usage extract_smr01_data(start_date, end_date)
   #'
   #' @details Connects to SMR01; Extracts data according to start and end date 
-  #' inputs; Performs preliminary wrangling- splitting operation codes into 
-  #' 4-digit a & b codes, then adding a flag for RAS procedure.
-  #' Resulting data needs to be grouped by link_no to work within patient record
-  #' or grouped by link_no and cis_marker to work within each individual patient stay.
+  #' inputs; Performs preliminary data tidying.
   
   ### Set default end date if none provided ------------------------------------
   
@@ -46,25 +44,22 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
   
   ### Set up query -------------------------------------------------------------
   query_smr01 <- paste0("SELECT 
-                      CI_CHI_NUMBER, 
+                      DATE_RECORD_INSERTED,
+                      DATE_LAST_AMENDED,
                       UPI_NUMBER, 
-                      PATIENT_IDENTIFIER, 
                       EPISODE_RECORD_KEY,
-                      CIS_MARKER,
-                      GLS_CIS_MARKER, 
+                      CIS_MARKER, 
                       LINK_NO, 
-                      ADMISSION, 
-                      DISCHARGE, 
-                      URI,
                       DOB,
                       AGE_IN_YEARS,
                       SEX,
                       POSTCODE,
+                      ADMISSION, 
+                      DISCHARGE, 
                       ADMISSION_DATE,
                       DISCHARGE_DATE,
                       LENGTH_OF_STAY,
                       SPECIALTY,
-                      SIGNIFICANT_FACILITY,
                       ADMISSION_TYPE,
                       LOCATION,
                       MAIN_CONDITION,
@@ -88,120 +83,23 @@ extract_smr01_data <- function(start_date = "'01-January-2023'",
                       WHERE ADMISSION_DATE >= ", start_date, "
                           AND ADMISSION_DATE < ", end_date, "
                         ORDER BY LINK_NO, ADMISSION_DATE, 
-                        DISCHARGE_DATE, ADMISSION, DISCHARGE, URI")
+                        DISCHARGE_DATE, ADMISSION, DISCHARGE, URI")#removed gls_cis_marker (17 obs of 88000 where is is not the same as cis_marker), ci_chi_number (because we should use upi), patient_identifier (never used), significant facility (never used). ADDED record inserted + record_last_amended
   
   ### Run query ----------------------------------------------------------------
   cli_progress_step("Fetching SMR-01 data from database...")
   smr01_data_extract <- dbGetQuery(smr01_connect, query_smr01) %>% 
     as.data.frame() %>% 
-    clean_names()
-
-  ### Data wrangling -----------------------------------------------------------
-  cli_progress_step("Preparing data extract...")
-
-  ras_clean_data <- smr01_data_extract %>% 
-    
-    # split procedure codes by a and b position
-    separate_wider_position(main_operation, c(op1a = 4, op1b = 4), too_few = "align_start")  %>% # always 4 digit codes?
-    separate_wider_position(other_operation_1, c(op2a = 4, op2b = 4), too_few = "align_start") %>% 
-    separate_wider_position(other_operation_2, c(op3a = 4, op3b = 4), too_few = "align_start") %>% 
-    separate_wider_position(other_operation_3, c(op4a = 4, op4b = 4), too_few = "align_start")  %>% 
-    
-    # make new columns to extract and label approach codes
-    mutate(op1_approach = case_when(!is.na(op1a) & op1b %in% approach_list ~ op1b, 
-                                    !is.na(op1a) & !(op1b %in% approach_list) ~ "NOS"), #if no matching approach code call it 'NOS'
-           op2_approach = case_when(!is.na(op2a) & op2b %in% approach_list ~ op2b,
-                                    !is.na(op2a) & !(op2b %in% approach_list) ~ "NOS"),
-           op3_approach = case_when(!is.na(op3a) & op3b %in% approach_list ~ op3b,
-                                    !is.na(op3a) & !(op3b %in% approach_list) ~ "NOS"),
-           op4_approach = case_when(!is.na(op4a) & op4b %in% approach_list ~ op4b,
-                                    !is.na(op4a) & !(op4b %in% approach_list) ~ "NOS")) # need to add in is.na = "NOS" too
-  
-  approach_vec <- c("op1_approach", "op2_approach", "op3_approach", "op4_approach") #label ras/minimally invasive/NoS instead of codes
-  ras_clean_data <- ras_clean_data %>% 
-    mutate(across(all_of(approach_vec), ~ case_when(. %in% robotics_list ~ "RAS",
-                                                    . %in% minimal_list ~ "MIA",
-                                                    . == "NOS" ~ "NOS",
-                                                    #is.na(.) ~ "NOS", # need to add in is.na = "NOS" too test tthis
-                                                    . %in% robotic_conv_list ~ "RAS conv open",
-                                                    . %in% minimal_conv_list ~ "MIA conv open",
-                                                    .default = NA_character_)),
-           
-           # make logical column indicating whether RAS has been used
-           ras_proc = case_when(op1_approach == "RAS" | op1_approach == "RAS conv open" ~ TRUE,
-                                op2_approach == "RAS" | op2_approach == "RAS conv open" ~ TRUE,
-                                op3_approach == "RAS" | op3_approach == "RAS conv open" ~ TRUE,
-                                op4_approach == "RAS" | op4_approach == "RAS conv open" ~ TRUE,
-                                is.na(op1_approach) & is.na(op2_approach) & is.na(op3_approach) & is.na(op4_approach) ~ NA,
-                                .default = FALSE),
-           
-           #make 2 columns for phase1 candidate procedure codes and their associated dates
-           phase1_proc1 = case_when(op1a %in% phase1_list ~ op1a, 
-                                    op2a %in% phase1_list ~ op2a,
-                                    op3a %in% phase1_list ~ op3a,
-                                    op4a %in% phase1_list ~ op4a,
-                                    .default = NA_character_),
-           phase1_proc1_date = case_when(op1a == phase1_proc1 ~ date_of_main_operation,
-                                         op2a == phase1_proc1 ~ date_of_other_operation_1,
-                                         op3a == phase1_proc1 ~ date_of_other_operation_2,
-                                         op4a == phase1_proc1 ~ date_of_other_operation_3,
-                                         .default = NA_Date_),
-           phase1_proc2 = case_when(!is.na(phase1_proc1) &
-                                      phase1_proc1 != op2a &
-                                      op2a %in% phase1_list ~ op2a,
-                                    !is.na(phase1_proc1) &
-                                      phase1_proc1 != op3a &
-                                      op3a %in% phase1_list ~ op3a,
-                                    !is.na(phase1_proc1) &
-                                      phase1_proc1 != op4a &
-                                      op4a %in% phase1_list ~ op4a,
-                                    .default = NA_character_),
-           phase1_proc2_date = case_when(op1a == phase1_proc2 ~ date_of_main_operation,
-                                         op2a == phase1_proc2 ~ date_of_other_operation_1,
-                                         op3a == phase1_proc2 ~ date_of_other_operation_2,
-                                         op4a == phase1_proc2 ~ date_of_other_operation_3,
-                                         .default = NA_Date_),
-           
-           #make 2 columns for phase2 candidate procedure codes and their associated dates
-           phase2_proc1 = case_when(op1a %in% phase2_list ~ op1a, 
-                                    op2a %in% phase2_list ~ op2a,
-                                    op3a %in% phase2_list ~ op3a,
-                                    op4a %in% phase2_list ~ op4a,
-                                    .default = NA_character_),
-           phase2_proc1_date = case_when(op1a == phase2_proc1 ~ date_of_main_operation,
-                                         op2a == phase2_proc1 ~ date_of_other_operation_1,
-                                         op3a == phase2_proc1 ~ date_of_other_operation_2,
-                                         op4a == phase2_proc1 ~ date_of_other_operation_3,
-                                         .default = NA_Date_),
-           phase2_proc2 = case_when(!is.na(phase2_proc1) &
-                                      phase2_proc1 != op2a &
-                                      op2a %in% phase2_list ~ op2a,
-                                    !is.na(phase2_proc1) &
-                                      phase2_proc1 != op3a &
-                                      op3a %in% phase2_list ~ op3a,
-                                    !is.na(phase2_proc1) &
-                                      phase2_proc1 != op4a &
-                                      op4a %in% phase2_list ~ op4a,
-                                    .default = NA_character_),
-           phase2_proc2_date = case_when(op1a == phase2_proc2 ~ date_of_main_operation,
-                                         op2a == phase2_proc2 ~ date_of_other_operation_1,
-                                         op3a == phase2_proc2 ~ date_of_other_operation_2,
-                                         op4a == phase2_proc2 ~ date_of_other_operation_3,
-                                         .default = NA_Date_),
-           
-           #make logical column indicating whether either phase1 or phase2 proc is present
-           candidate_proc = case_when(!is.na(phase1_proc1) | !is.na(phase2_proc1) ~ TRUE, 
-                                      is.na(phase1_proc1) & is.na(phase2_proc1) ~ NA,
-                                      .default = FALSE))
+    clean_names() %>% 
+    rename(diag1 = main_condition, diag2 = other_condition_1, diag3 = other_condition_2, #rename diagnosis code columns
+           diag4 = other_condition_3, diag5 = other_condition_4, diag6 = other_condition_5,
+           op1_date = date_of_main_operation, op2_date = date_of_other_operation_1, #rename date of procedure cols
+           op3_date = date_of_other_operation_2, op4_date = date_of_other_operation_3) 
   
   ### Disconnect and clean environment -----------------------------------------
   dbDisconnect(smr01_connect)
   rm(smr01_connect)
   gc()
   
-  ### Return df ----------------------------------------------------
-
-  return(ras_clean_data)
-
+  return(smr01_data_extract)
 }
 
