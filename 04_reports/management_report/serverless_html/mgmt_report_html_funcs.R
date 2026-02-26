@@ -41,14 +41,18 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
     setNames(hospitals)
   
-  spec_colours <- c("colorectal" = "#12436D",
+  spec_colours <- c("Colorectal" = "#12436D",
                     "ENT" = "#28A197",
-                    "gynaecology" = "#801650",
-                    "thoracic" = "#F46A25",
-                    "urology" = "#A285D1",
-                    "gastroenterology" = "#3E8ECC",
-                    "hepatobiliary" = "#3F085C",
-                    "other surgical specialty" = "#3D3D3D")
+                    "Gynaecology" = "#801650",
+                    "Thoracic" = "#F46A25",
+                    "Urology" = "#A285D1",
+                    "Gastroenterology" = "#3E8ECC",
+                    "Hepatobiliary" = "#3F085C",
+                    "General surgery - unlisted" = "#3D3D3D",
+                    "ENT - unlisted" = "#3D3D3D",
+                    "Thoracic - unlisted" = "#3D3D3D",
+                    "Urology - unlisted" = "#3D3D3D",
+                    "Other specialty - unlisted" = "#3D3D3D")
   
   
   ##### html
@@ -83,7 +87,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         ),
         # do.call(navset_card_tab,
         #   args = map(
-        #     sort(unique(spec_procsmth$code_specialty)),
+        #     sort(unique(spec_procsmth$main_op_specialty)),
         #     ~ggiraph_nav(capitalise_first(.x),
         #                  title = str_glue(
         #                    "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
@@ -96,7 +100,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         # )
         do.call(navset_card_tab,
           args = map(
-            sort(unique(spec_procsmth$code_specialty)),
+            sort(unique(spec_procsmth$main_op_specialty)),
             ~ggiraph_nav(capitalise_first(.x),
                          title = str_glue(
                            "Number of Phase 1 {spec} procedures performed per month, by approach ({start_date} - {latest_date})",

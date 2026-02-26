@@ -22,7 +22,7 @@ source(paste0(script_dir, "mgmt_report_plots.R"))
 
 # controls ----------------------------------------------------------------
 
-date_to <- as.Date("2025-10-01")
+date_to <- as.Date("2025-11-01")
 date_from <- date_to %m-% months(12)
 health_boards <- list(
   'Ayrshire & Arran',
@@ -49,7 +49,7 @@ equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
 equity_resprop <- read_parquet(paste0(mgmt_data_dir, "equity_resprop.parquet"))
 
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet")) |>
-  filter(op_mth_year < date_to, op_mth_year >= date_from)
+  filter(op_mth < date_to, op_mth >= date_from)
 
 # hospital lookups
 hospitals <- read_csv(paste0(lookup_dir, "NHSScotland_hospitals.csv"))
