@@ -10,49 +10,33 @@
 ### read in aggregated smr01 data ----------------------------------------------
 smr01_procsmth <- read_parquet(paste0(data_dir, "management_report/util_procsmth.parquet")) 
 
-### create dummy data as if from Intuitive -------------------------------------
+### read in intuitive data -----------------------------------------------------
+intuitive_data <- read_parquet(paste0(data_dir, "intuitive/intuitive_rolling_data.parquet"))
+
+# and lookup for adjusting specialty labelling to match SRASA labels
+intuitive_lookup <- read.csv(paste0(data_dir, "lookups/intuitive_spec_lookup.csv")) 
+
+### make aggregate stats for intuitive data ------------------------------------
+intuitive_comp <- intuitive_data %>% 
+  left_join(intuitive_lookup, by = join_by(procedure_type == int_procedure)) %>% 
+  group_by(hospital_name, srasa_specialty, op_month) %>% 
+  summarise(monthly_n = n()) %>% 
+  ungroup() 
+
+# aggregate to hospital level
+intuitive_hospwide <- intuitive_comp %>% 
+  group_by(hospital_name, op_month) %>% 
+  summarise(int_n = sum(monthly_n))
+
+### merge smr01 and intutiive aggregated data ----------------------------------
 dq_compprocs <- smr01_procsmth %>% 
-  mutate(intuitive_robot1 = case_when(hospital_name_grp == "Ninewells Hospital" |
-                                hospital_name_grp == "St John's Hospital" |
-                                hospital_name_grp == "University Hospital Crosshouse" ~ round(n+n*0.075,0),
-                              hospital_name_grp == "Raigmore Hospital" |
-                                hospital_name_grp == "Royal Infirmary of Edinburgh at Little France" |
-                                hospital_name_grp == "Victoria Hospital" |
-                                hospital_name_grp == "Glasgow Royal Infirmary" ~ round(n+n*0.09,0),
-                              hospital_name_grp == "University Hospital Hairmyres" ~ round(n*0.95),
-                              hospital_name_grp == "Western General Hospital" |
-                                hospital_name_grp == "Queen Elizabeth University Hospital" |
-                                hospital_name_grp == "Golden Jubilee University National Hospital" ~ round(n/2, 0),
-                              hospital_name_grp == "Aberdeen Royal Infirmary" ~ round(n/3, 0),
-                              hospital_name_grp == "Other Hospital Listed" ~ NA,
-                              .default = NA),
-         intuitive_robot2 = case_when(hospital_name_grp == "Western General Hospital" |
-                                hospital_name_grp == "Queen Elizabeth University Hospital" |
-                                hospital_name_grp == "Golden Jubilee University National Hospital" |
-                                hospital_name_grp == "Aberdeen Royal Infirmary" ~ round(intuitive_robot1+
-                                                                                          intuitive_robot1*0.08, 0),
-                              .default = NA),
-         intuitive_robot3 = case_when(hospital_name_grp == "Aberdeen Royal Infirmary" ~ round(intuitive_robot1+
-                                                                                                intuitive_robot1*0.04, 0),
-                              .default = NA),
-         intuitive_tot = case_when(is.na(intuitive_robot1) ~ NA,
-                                   is.na(intuitive_robot2) ~ intuitive_robot1,
-                                   is.na(intuitive_robot3) ~ intuitive_robot1 + intuitive_robot2,
-                                   !is.na(intuitive_robot3) ~ intuitive_robot1 + intuitive_robot2 + intuitive_robot3),
-         prop_smr_found = round(n/intuitive_tot*100, 2)) %>% 
-  rename(smr01 = n) %>%  
-  pivot_longer(smr01:intuitive_robot3, names_to = "robot", values_to = "n") %>% 
-  mutate(hospital_name_grp = case_when(robot != "smr01" ~ paste0(hospital_name_grp, " - Intuitive"),
-                                       .default = hospital_name_grp))
+  left_join(intuitive_hospwide, by = join_by(hospital_name_grp == hospital_name, op_mth == op_month)) %>% 
+  mutate(diff = int_n-n,
+         prop_missed = round(diff/int_n*100, 2)) %>% 
+  group_by(hospital_name_grp) %>% 
+  mutate(mean_diff = round(mean(diff, na.rm = TRUE), 2),
+         mean_prop_missed = round(mean(prop_missed, na.rm = TRUE), 2))
 
 ### save out data --------------------------------------------------------------
 write_parquet(dq_compprocs, paste0(data_dir, "management_report/dq_compprocs.parquet"))
-         
-# ,
-# robot2_n = case_when(hospital_name_grp == "Western General Hospital" |
-#                        hospital_name_grp == "Queen Elizabeth University Hospital" |
-#                        hospital_name_grp == "Golden Jubilee University National Hospital" |
-#                        ~ robot1_n,
-#                      .default = NA),
-# robot3_n = case_when(hospital_name_grp == "Aberdeen Royal Infirmary" ~ robot1_n,
-#                      .default = NA)
+ 
