@@ -47,7 +47,7 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
                                                     "\n Month: ", op_mth),
                                    data_id = dow)) +
     geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
-    geom_hline_interactive(yintercept = 1.5, linetype = "dashed", color = "grey30")+
+    geom_hline_interactive(yintercept = 1, linetype = "dashed", color = "grey30")+
     labs(x = "Day of the Week", 
          y = "Monthly mean no. RAS procedures", 
          caption = "Data from SMR01",
