@@ -37,6 +37,17 @@ ras_cand_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extrac
   mutate(res_health_board = case_when(is.na(res_health_board) ~ "Unknown",
                                       .default = res_health_board))
 
+wrong_hosp <- ras_cand_data %>% #get list of hospital names that appear but do not have a robot
+  filter(hosp_has_robot != "Yes") %>% 
+  group_by(hospital_name) %>% 
+  slice(1) %>% 
+  dplyr::pull(., hospital_name)
+
+ras_cand_data <- ras_cand_data %>% #some aberrant coding liekly due to transfers
+  mutate(hospital_name_grp = case_when(hospital_name %in% wrong_hosp ~ "Other Hospital Listed", #contains non-RAS and private hospitals
+                                       .default = hospital_name),
+         hospital_name_grp = factor(hospital_name_grp, levels = hosp_order))
+
 
 ### Hospital-level equity ------------------------------------------------------
 # show at hospital level as more relevant to specialty than hb
@@ -55,15 +66,55 @@ spec_procsmth <- ras_cand_data %>%
 
 write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.parquet"))
 
+### Phases of conducted ras procs per specialty
+spec_procphase <- ras_cand_data %>%
+  group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  group_by(op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
+  bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(hospital_name_grp, ~"All"),
+                      .groups = "drop")) %>% 
+  ungroup() 
+
+chart_data <- spec_procphase %>% 
+  filter(ras_proc == "RAS" &
+           hospital_name_grp != "All") %>% 
+  mutate(main_op_phase = factor(main_op_phase, levels = c("phase1", "phase2", "non-priority"))) 
+  
+spec_procphase_plot <- ggplot(chart_data, aes(x = op_mth, y = n, fill = fct_rev(main_op_phase), #and this need to be split across specialty tabs
+             tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                              "\n Procedure phase; ", main_op_phase,
+                              "\n No. RAS procedures: ", n,
+                              "\n Month: ", op_mth),
+             data_id = op_mth)) +
+  geom_bar_interactive(stat = "identity", hover_nearest = TRUE) +
+  labs(x = "Month", 
+       y = "Total RAS procedures", 
+       fill = "Procedure phase",
+       caption = "Data from SMR01",
+       subtitle = paste0())+ 
+  scale_fill_manual(values = c("#3D3D3D","#3E8ECC","#3F085C"))+
+  facet_wrap(~hospital_name_grp)+
+  #theme_phs_ylines() +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+spec_procphase_plot
+
+
+
+
+
 ##### Weekly no. procs by specialty and location, shown monthly ----------------
 #until i can figure out mean no per spec per day of the week per month
-# equity_specsday <- long_data %>%
-#   filter(proc_date >= start_date & 
-#            proc_date < latest_date) %>% 
-#   group_by(hospital_name, op_mth_year, op_year, proc_date, code_specialty, proc_approach_binary) %>% 
+# equity_specsday <- ras_cand_data %>%
+#   filter(main_op_date >= start_date & 
+#            main_op_date < latest_date) %>% 
+#   group_by(hospital_name, op_mth, op_year, main_op_date, main_op_specialty, ras_proc) %>% 
 #   summarise(n = n()) %>% 
 #   ungroup() %>% 
-#   group_by(op_mth_year, op_year, code_specialty, proc_approach_binary) %>% 
+#   group_by(op_mth, op_year, main_op_specialty, ras_proc) %>% 
 #   bind_rows(summarise(.,
 #                       across(where(is.numeric), sum),
 #                       across(hospital_name, ~"All"),
@@ -73,21 +124,20 @@ write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.p
 # write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsday.parquet"))
 
 ##### Mean number of surgeries per day of the week, monthly --------------------
-equity_specsday <- ras_cand_data %>% # i don't think this is quite doing what I want it to
-  filter(ras_proc == TRUE) %>%
-  mutate(#op_week = floor_date(proc_date, "week"),
-         dow = factor(format(as.Date(proc_date, format="%d/%m/%Y"),"%A"),
-                      levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
-                                 "Friday", "Saturday", "Sunday"))) %>%
-  group_by(hospital_name, op_year, op_mth_year, ?op_week, proc_date, dow, code_specialty) %>%
-  summarise(n = n()) %>%
-  ungroup() %>%
-  tidyr::complete(hospital_name, op_year, op_mth_year, ?op_week, dow, code_specialty) %>% #need to get zeroes for the days when no surgery happened for that spec at that location
-  mutate(n = replace_na(n, 0)) %>%
-  group_by(hospital_name, op_year, op_mth_year, dow, code_specialty) %>% #, .drop = FALSE
-  summarise(mean_procs_pd = round(mean(n), 2)) %>%
-  ungroup()
-
-write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
+# equity_specsday <- ras_cand_data %>% # i don't think this is quite doing what I want it to
+#   filter(ras_proc == "RAS") %>%
+#   mutate(dow = factor(format(as.Date(main_op_date, format="%d/%m/%Y"),"%A"),
+#                       levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
+#                                  "Friday", "Saturday", "Sunday"))) %>%
+#   group_by(hospital_name, op_year, op_mth, main_op_date, dow, main_op_specialty) %>%
+#   summarise(n = n()) %>%
+#   ungroup() %>%
+#   tidyr::complete(hospital_name, op_year, op_mth, dow, main_op_specialty) %>% #need to get zeroes for the days when no surgery happened for that spec at that location
+#   mutate(n = replace_na(n, 0)) %>%
+#   group_by(hospital_name, op_year, op_mth, dow, main_op_specialty) %>% #, .drop = FALSE
+#   summarise(mean_procs_pd = round(mean(n), 2)) %>%
+#   ungroup()
+# 
+# write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
 
 
