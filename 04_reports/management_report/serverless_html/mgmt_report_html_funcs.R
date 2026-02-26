@@ -23,21 +23,6 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     start_date <- as_date(latest_date)
   }
   
-  ##### Colours ----
-  # hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
-  #                   "Glasgow Royal Infirmary" = "#94AABD",
-  #                   "Golden Jubilee University National Hospital" = "#28A197",
-  #                   "Ninewells Hospital" = "#B4DEDB",
-  #                   "Queen Elizabeth University Hospital" = "#801650",
-  #                   "Raigmore Hospital" = "#CCA2B9",
-  #                   "Royal Infirmary of Edinburgh at Little France" = "#F46A25",
-  #                   "St John's Hospital" = "#FBC3A8",
-  #                   "University Hospital Crosshouse" = "#3E8ECC",
-  #                   "University Hospital Hairmyres" = "#A8CCE8",
-  #                   "Victoria Hospital" = "#3F085C",
-  #                   "Western General Hospital" = "#A285D1",
-  #                   "Other Hospital Listed" = "#3D3D3D")
-  
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
     setNames(hospitals)
   
@@ -54,17 +39,27 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Urology - unlisted" = "#3D3D3D",
                     "Other specialty - unlisted" = "#3D3D3D")
   
-  
   ##### html
   report_html <- page_navbar(
-    title = "Scottish Robotic-Assisted Surgery Audit - Management Report",
+    title = span(
+      img_base64("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa/04_reports/management_report/serverless_html/resources/phs-logo.png",
+                 style = "width:120px;"),
+      "Scottish Robotic-Assisted Surgery Audit") ,
     navbar_options = navbar_options(
-      bg = "#80BCEA",
+      bg = "white",
       theme = "light"
     ),
     fillable = FALSE,
     nav_panel(
-      "Utilisation",
+      "About SRASA",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        includeHTML(paste0(script_dir, "/resources/mgmt-info-distribution-warning.html")),
+        card(includeHTML(paste0(script_dir, "/resources/about.html")))
+      )
+    ),
+    nav_panel(
+      "Total utilisation",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
@@ -78,46 +73,59 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       )
     ),
     nav_panel(
-      "Specialty access",
+      "By specialty",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
           title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({start_date} - {latest_date})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
-        # do.call(navset_card_tab,
-        #   args = map(
-        #     sort(unique(spec_procsmth$main_op_specialty)),
-        #     ~ggiraph_nav(capitalise_first(.x),
-        #                  title = str_glue(
-        #                    "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
-        #                    spec = .x),
-        #                  make_plot_spec_funnel(month = latest_month,
-        #                                        specialty = .x,
-        #                                        hosp_colours = hosp_colours[names(hosp_colours) %in% hospitals])
-        #     )
-        #   )
-        # )
         do.call(navset_card_tab,
-          args = map(
-            sort(unique(spec_procsmth$main_op_specialty)),
-            ~ggiraph_nav(capitalise_first(.x),
-                         title = str_glue(
-                           "Number of Phase 1 {spec} procedures performed per month, by approach ({start_date} - {latest_date})",
-                           spec = .x),
-                         make_plot_candidate_procs(hospitals, .x)
-            )
-          )
+                args = map(
+                  sort(unique(spec_procsmth$main_op_specialty)),
+                  ~ggiraph_nav(capitalise_first(.x),
+                               title = str_glue(
+                                 "Number of Phase 1 {spec} procedures performed per month, by approach ({start_date} - {latest_date})",
+                                 spec = .x),
+                               make_plot_candidate_procs(hospitals, .x)
+                  )
+                )
         )
       )
     ),
+    nav_panel(
+      "By procedure",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        "placeholder"
+      )
+    ),
+    
     nav_spacer(),
     nav_item(hb)
-  )
+  ) |>
+    page_fluid(theme = bs_theme(primary = phs_colour_values[1],
+                               secondary = phs_colour_values[2],
+                               base_font = "Open Sans",
+                               "font-size-lg" = "1.1rem" ),
+              gdtools::addGFontHtmlDependency(family = "Open Sans"))
   
   return(report_html)
 }
 
+ggiraph_default <- function(plot){
+  girafe(ggobj = plot,
+         options = list(
+           opts_tooltip(
+             opacity = 0.6,
+             use_fill = TRUE),
+           opts_hover(css = "opacity:0.8", nearest_distance = 10),
+           opts_hover_inv(css = "opacity:0.4")),
+         height_svg = 6,
+         width_svg = 9,
+         fonts = list(sans = "Open Sans")
+         )
+}
 
 ggiraph_card <- function(title, plot){
   card(
@@ -125,18 +133,7 @@ ggiraph_card <- function(title, plot){
     card_header(title),
     card_body(
       fillable=FALSE,
-      girafe(ggobj = plot,
-             options = list(
-               opts_tooltip(css = "
-                              border-radius:5px; 
-                              padding:5px;
-                              text-shadow: 0 0 1px white, 0 0 1px white;
-                              ",
-                            opacity = 1, use_fill = TRUE),
-               opts_hover(css = "opacity:0.8", nearest_distance = 10),
-               opts_hover_inv(css = "opacity:0.4")),
-             height_svg = 6,
-             width_svg = 9)
+      ggiraph_default(plot)
     )
   )
 }
@@ -147,18 +144,7 @@ ggiraph_nav <- function(tab_name, title, plot){
     card_title(title),
     card_body(
       fillable=FALSE,
-      girafe(ggobj = plot,
-             options = list(
-               opts_tooltip(css = "
-                              border-radius:5px; 
-                              padding:5px;
-                              text-shadow: 0 0 1px white, 0 0 1px white;
-                              ",
-                            opacity = 1, use_fill = TRUE),
-               opts_hover(css = "opacity:0.8", nearest_distance = 10),
-               opts_hover_inv(css = "opacity:0.4")),
-             height_svg = 6,
-             width_svg = 9)
+      ggiraph_default(plot)
     )
   )
 }
@@ -226,4 +212,11 @@ batch_reports <- function(health_boards, date_from, date_to, output_dir) {
                                           ".html"
           ))
     )
+}
+
+
+# base64 encode images to embed
+img_base64 <- function(path, ...) {
+  base64 <- base64enc::dataURI(file = path, mime = "image/png")
+  htmltools::tags$img(src = base64, ...)
 }

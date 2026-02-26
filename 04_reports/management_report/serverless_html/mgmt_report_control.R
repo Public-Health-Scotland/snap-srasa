@@ -1,13 +1,4 @@
-library(bslib)
-library(dplyr)
-library(ggplot2)
-library(ggiraph)
-library(arrow)
-library(stringr)
-library(lubridate)
-library(phsstyles)
-library(snappack)
-
+# Create monthly mgmt report
 
 # folders -----------------------------------------------------------------
 
@@ -19,6 +10,11 @@ output_dir <- "/conf/quality/srasa/(04) Project Reports/Monthly Reports/Manageme
 
 source(paste0(script_dir, "mgmt_report_html_funcs.R"))
 source(paste0(script_dir, "mgmt_report_plots.R"))
+
+
+# fonts -------------------------------------------------------------------
+
+gdtools::register_gfont("Open Sans")
 
 # controls ----------------------------------------------------------------
 
@@ -56,7 +52,7 @@ hospitals <- read_csv(paste0(lookup_dir, "NHSScotland_hospitals.csv"))
 
 # reports -----------------------------------------------------------------
 
-#test_report <- produce_report("Greater Glasgow & Clyde", "2024-10-01", "2025-10-01")
+#test_report <- produce_report("Greater Glasgow & Clyde", "2024-11-01", "2025-11-01")
 #save_self_contained_html(test_report, paste0(output_dir, "test_new_func.html"))
 
 batch_reports(
