@@ -23,21 +23,6 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     start_date <- as_date(latest_date)
   }
   
-  ##### Colours ----
-  # hosp_colours <- c("Aberdeen Royal Infirmary" = "#12436D",
-  #                   "Glasgow Royal Infirmary" = "#94AABD",
-  #                   "Golden Jubilee University National Hospital" = "#28A197",
-  #                   "Ninewells Hospital" = "#B4DEDB",
-  #                   "Queen Elizabeth University Hospital" = "#801650",
-  #                   "Raigmore Hospital" = "#CCA2B9",
-  #                   "Royal Infirmary of Edinburgh at Little France" = "#F46A25",
-  #                   "St John's Hospital" = "#FBC3A8",
-  #                   "University Hospital Crosshouse" = "#3E8ECC",
-  #                   "University Hospital Hairmyres" = "#A8CCE8",
-  #                   "Victoria Hospital" = "#3F085C",
-  #                   "Western General Hospital" = "#A285D1",
-  #                   "Other Hospital Listed" = "#3D3D3D")
-  
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
     setNames(hospitals)
   
@@ -85,19 +70,6 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
           title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({start_date} - {latest_date})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
-        # do.call(navset_card_tab,
-        #   args = map(
-        #     sort(unique(spec_procsmth$main_op_specialty)),
-        #     ~ggiraph_nav(capitalise_first(.x),
-        #                  title = str_glue(
-        #                    "Proportion of Phase 1 {spec} procedures performed robotically per hospital ({format(latest_month, '%B %Y')})",
-        #                    spec = .x),
-        #                  make_plot_spec_funnel(month = latest_month,
-        #                                        specialty = .x,
-        #                                        hosp_colours = hosp_colours[names(hosp_colours) %in% hospitals])
-        #     )
-        #   )
-        # )
         do.call(navset_card_tab,
           args = map(
             sort(unique(spec_procsmth$main_op_specialty)),

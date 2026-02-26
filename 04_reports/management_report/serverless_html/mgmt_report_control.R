@@ -1,13 +1,4 @@
-library(bslib)
-library(dplyr)
-library(ggplot2)
-library(ggiraph)
-library(arrow)
-library(stringr)
-library(lubridate)
-library(phsstyles)
-library(snappack)
-
+# Create monthly mgmt report
 
 # folders -----------------------------------------------------------------
 
