@@ -22,10 +22,10 @@ start_date <- latest_date %>%
   lubridate::floor_date("month") %m-% months(12)
 
 ### Read in raw data from SMR01, no filtering for procedure --------------------
-ras_min_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min_", #min data is only 1 row per proc
-                                      format(Sys.Date(), "%Y-%m"), ".parquet")) %>%
+ras_min_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) %>% #min data is 1 row per cis
   filter(op1_date >= start_date & 
-           op1_date < latest_date) %>% 
+           op1_date < latest_date,
+         ras_proc == TRUE) %>% #only counting ras procs for utilisation
   ungroup() 
 
 wrong_hosp <- ras_min_data %>% #get list of hospital names that appear but do not have a robot
@@ -41,8 +41,6 @@ ras_util_data <- ras_min_data %>% #some aberrant coding liekly due to transfers
 
 ### Number of robotics procedures per month by hospital location ---------------
 util_procsmth <- ras_util_data %>% 
-  mutate(op_mth = floor_date(op1_date, "month"),
-         op_year = format(as.Date(op1_date, format="%d/%m/%Y"),"%Y")) %>% 
   group_by(hospital_name_grp, op_mth, op_year) %>% 
   summarise(n = n()) %>% 
   ungroup() #compares ok with previous approach - one or 2 more or less per month
@@ -51,9 +49,7 @@ write_parquet(util_procsmth, paste0(data_dir,  "management_report/util_procsmth.
 
 ### Mean daily number of robotics procedures by day per month ------------------
 util_procsday <- ras_util_data %>% 
-  mutate(op_mth = floor_date(op1_date, "month"),
-         op_year = format(as.Date(op1_date, format="%d/%m/%Y"),"%Y"),
-         dow = factor(format(as.Date(op1_date, format="%d/%m/%Y"),"%A"),
+  mutate(dow = factor(format(as.Date(op1_date, format="%d/%m/%Y"),"%A"),
                       levels = c("Monday", "Tuesday", "Wednesday", "Thursday", 
                                  "Friday", "Saturday", "Sunday"))) %>%
   group_by(hospital_name_grp, op_year, op_mth, op1_date, dow) %>% 

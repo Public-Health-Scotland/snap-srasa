@@ -64,19 +64,17 @@ adjust_phase_diag <- function(df){
                                            
                                            .default = NA),
            
-           main_op_phase = case_when(main_op_code %in% diag_dependent_ent & ## For some reason this wasn't working when in a single case_when, retry another time for neatness
-                                       is.na(phasing_diagnostics) | 
-                                       phasing_diagnostics != "cancer_ent" ~ "phase2", 
-                                     .default = main_op_phase), #if ent and NOT flagged as cancer = phase 2, otherwise phase 1
-           main_op_phase = case_when(main_op_code %in% diag_dependent_gynae &
-                                       phasing_diagnostics == "cancer_ovarian" ~ "non-priority",
-                                     main_op_code %in% diag_dependent_gynae &
-                                       phasing_diagnostics == "cancer_endometrial" ~ "phase1", 
-                                     .default = main_op_phase),#hysterectomy default is phase2 for any cancer (except ovarian) and benign cases, if endometrial cancer make it phase 1
-           main_op_phase = case_when(main_op_code %in% diag_dependent_gastro &
-                                       phasing_diagnostics == "obesity_gastro" ~ "non-priority", #if gastro and obesity = non-priority, otherwise phase 2
-                                     .default = main_op_phase))
-  
+           main_op_phase = replace_when(main_op_phase, 
+                                        #is.na(phasing_diagnostics) & main_op_phase == "non-priority" ~ "non-priority",
+                                        phasing_diagnostics == "cancer_ent" &
+                                          main_op_code %in% diag_dependent_ent ~ "phase1", #changed lookup to make ent phase 2 by default, so now if dig = ent cancer then switch it to phase 1
+                                        phasing_diagnostics == "cancer_ovarian" &
+                                          main_op_code %in% diag_dependent_gynae ~ "non-priority",
+                                        phasing_diagnostics == "cancer_endometrial" &
+                                          main_op_code %in% diag_dependent_gynae ~ "phase1", #hysterectomy default is phase2 for any cancer (except ovarian) and benign cases, if endometrial cancer make it phase 1
+                                        phasing_diagnostics == "obesity_gastro" &
+                                          main_op_code %in% diag_dependent_gastro ~ "non-priority")) #if gastro and obesity = non-priority, otherwise default is phase 2
+ 
   return(diag_adj_data)
   
 }
