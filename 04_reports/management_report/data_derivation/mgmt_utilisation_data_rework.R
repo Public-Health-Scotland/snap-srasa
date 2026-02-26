@@ -49,11 +49,20 @@ write_parquet(util_procsmth, paste0(data_dir,  "management_report/util_procsmth.
 
 ### Mean daily number of robotics procedures by day per month ------------------
 util_procsday <- ras_util_data %>% 
-  mutate(dow = factor(format(as.Date(op1_date, format="%d/%m/%Y"),"%A"),
+  mutate(dow = factor(format(as.Date(main_op_date, format="%d/%m/%Y"),"%A"),
                       levels = c("Monday", "Tuesday", "Wednesday", "Thursday", 
-                                 "Friday", "Saturday", "Sunday"))) %>%
-  group_by(hospital_name_grp, op_year, op_mth, op1_date, dow) %>% 
+                                 "Friday", "Saturday", "Sunday")),
+         week = floor_date(main_op_date, "week")) %>%
+  group_by(hospital_name_grp, week, dow) %>% 
   summarise(n = n()) %>% 
+  ungroup() %>% 
+  tidyr::complete(hospital_name_grp, week, dow, 
+                  fill = list(n=0)) %>%
+  # then need to re-derive date vars for plotting. Complete does not work well with multiple date cols
+  mutate(op_mth = floor_date(week, "month"), 
+         op_year = format(as.Date(week, format="%Y-%m-%d"),"%Y"),
+         op_qt = lubridate::quarter(as.Date(week, format="%Y-%m-%d"), with_year = T)) %>% 
+  #and make mean per month (qt?)
   group_by(hospital_name_grp, op_year, op_mth, dow, .drop = FALSE) %>% #is drop=F working fully? it should be possible to have a mean per day <1 e.g. if surgery not done every monday
   summarise(mean_procs_pd = round(mean(n), 2)) %>% 
   mutate(mean_procs_pd = ifelse(is.nan(mean_procs_pd), 0, mean_procs_pd)) %>% 
