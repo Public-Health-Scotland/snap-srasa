@@ -13,17 +13,17 @@
 # to a year prior to that date
 # use < latest date and >= start_date 
 latest_date <- Sys.Date() %>% 
-  lubridate::floor_date("month") %m-% months(2)
+  lubridate::floor_date("month") %m-% months(3)
 
 start_date <- latest_date %>% 
   lubridate::floor_date("month") %m-% months(12)
 
 ### Read in cleaned data from SMR01 --------------------------------------------
 ras_cand_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) %>% 
-  filter(main_op_date >= start_date & 
-           main_op_date < latest_date,
-         main_op_phase == "phase1" | 
-           main_op_phase == "phase2") %>% 
+  filter(op_mth >= start_date & 
+           op_mth < latest_date &
+         (main_op_phase == "phase1" | 
+           main_op_phase == "phase2")) %>% 
   #only want phase1 and phase2 procs for equity? fair to compare equity for non-priority surgeries? otherwise get all non-ras cases for non-priority procs too so hard to justify
   #tidying
   mutate(main_op_approach = as.factor(main_op_approach), 

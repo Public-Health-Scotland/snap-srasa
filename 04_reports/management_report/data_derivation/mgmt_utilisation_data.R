@@ -16,15 +16,15 @@ source("./02_setup/subset_smr01_extract.R")
 # to a year prior to that date
 # use < latest date and >= start_date 
 latest_date <- Sys.Date() %>% 
-  lubridate::floor_date("month") %m-% months(2)
+  lubridate::floor_date("month") %m-% months(3)
 
 start_date <- latest_date %>% 
   lubridate::floor_date("month") %m-% months(12)
 
 ### Read in raw data from SMR01, no filtering for procedure --------------------
 ras_min_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) %>% #min data is 1 row per cis
-  filter(op1_date >= start_date & 
-           op1_date < latest_date,
+  filter(op_mth >= start_date & 
+           op_mth < latest_date,
          ras_proc == TRUE) %>% #only counting ras procs for utilisation
   ungroup() 
 

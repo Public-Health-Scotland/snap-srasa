@@ -13,18 +13,18 @@
 # to a year prior to that date
 # use < latest date and >= start_date 
 latest_date <- Sys.Date() %>% 
-  lubridate::floor_date("month") %m-% months(2)
+  lubridate::floor_date("month") %m-% months(3)
 
 start_date <- latest_date %>% 
   lubridate::floor_date("month") %m-% months(12)
 
 ### Read in cleaned data from SMR01 --------------------------------------------
 ras_cand_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) %>% 
-  filter(main_op_date >= start_date & 
-           main_op_date < latest_date) %>% 
+  filter(op_mth >= start_date & 
+           op_mth < latest_date) %>% 
   
   #tidying
-  mutate(main_op_approach = as.factor(main_op_approach), pt
+  mutate(main_op_approach = as.factor(main_op_approach), 
          main_op_approach = fct_relevel(main_op_approach, c("NOS", "MIA", "RAS", 
                                                             "RAS conv open", "MIA conv open")),
          age_group = as.factor(age_group),
@@ -78,6 +78,8 @@ spec_procphase <- ras_cand_data %>%
                       .groups = "drop")) %>% 
   ungroup() 
 
+write_parquet(spec_procphase, paste0(data_dir, "management_report/spec_procphase.parquet"))
+
 chart_data <- spec_procphase %>% 
   filter(ras_proc == "RAS" &
            hospital_name_grp != "All") %>% 
@@ -95,7 +97,7 @@ spec_procphase_plot <- ggplot(chart_data, aes(x = op_mth, y = n, fill = fct_rev(
        fill = "Procedure phase",
        caption = "Data from SMR01",
        subtitle = paste0())+ 
-  scale_fill_manual(values = c("#3D3D3D","#3E8ECC","#3F085C"))+
+  scale_fill_manual(values = c("#b1b1b1","#3F085C","#3E8ECC"))+
   facet_wrap(~hospital_name_grp)+
   #theme_phs_ylines() +
   theme(legend.position = 'bottom',
