@@ -20,7 +20,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     start_date <- latest_date %>% 
       floor_date("month") %m-% months(12)
   } else {
-    start_date <- as_date(latest_date)
+    start_date <- as_date(start_date)
   }
   
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
@@ -120,6 +120,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   ) |>
     page_fluid(theme = bs_theme(primary = phs_colour_values[1],
                                secondary = phs_colour_values[2],
+                               danger = "#B93A46",
                                base_font = "Open Sans",
                                "font-size-lg" = "1.1rem" ),
               gdtools::addGFontHtmlDependency(family = "Open Sans"))
