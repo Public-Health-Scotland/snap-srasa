@@ -50,7 +50,15 @@ ras_cand_data <- ras_cand_data %>% #some aberrant coding liekly due to transfers
 
 # show at hospital level as more relevant to specialty than hb
 
-##### Total monthly no. ras procs by specialty & location --------------------
+
+# Simplify specialty categories for these graphs
+ras_cand_data <- ras_cand_data %>% 
+  mutate(main_op_specialty = str_remove(main_op_specialty, #collapse unlisted into main specialty
+                                        " - unlisted"),
+         main_op_specialty = replace_when(main_op_specialty, #relabel general to highlight its a fall-back category
+                                          main_op_specialty == "General surgery" ~ "General surgery (other)"))
+
+##### Total monthly no. ras procs by specialty & location ----------------------
 spec_procsmth <- ras_cand_data %>%
   group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, ras_proc) %>% 
   summarise(n = n()) %>% 

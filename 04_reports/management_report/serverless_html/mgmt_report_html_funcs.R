@@ -33,6 +33,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Urology" = "#A285D1",
                     "Gastroenterology" = "#3E8ECC",
                     "Hepatobiliary" = "#3F085C",
+                    "General surgery (other)" = "#3D3D3D",
                     "General surgery - unlisted" = "#3D3D3D",
                     "ENT - unlisted" = "#3D3D3D",
                     "Thoracic - unlisted" = "#3D3D3D",
