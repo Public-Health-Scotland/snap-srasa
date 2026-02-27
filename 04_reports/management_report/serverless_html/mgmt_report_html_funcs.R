@@ -104,7 +104,17 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       "By procedure",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        "placeholder"
+        do.call(navset_card_tab,
+                args = map(
+                  sort(unique(proc_index$main_op_specialty)),
+                  ~ggiraph_nav(capitalise_first(.x),
+                               title = str_glue(
+                                 "Proportion of each specialty's index procedure performed by RAS, by specialty ({start_date} - {latest_date})",
+                                 spec = .x),
+                               make_plot_proc_index(hospitals, .x)
+                  )
+                )
+        ),
       )
     ),
     nav_panel(

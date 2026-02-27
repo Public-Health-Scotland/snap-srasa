@@ -146,31 +146,45 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
 make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialty tabs
   #"Proportion of each specialty's index procedure performed by RAS, by specialty ({start_date} - {latest_date})", #add threshold after steering grp
   
-  chart_data <- proc_index %>% 
-    filter(hospital_name_grp %in% hospitals &
-             main_op_specialty == specialty)
+  all_months <- proc_index$op_mth |> unique() |> sort()
+  proc <- proc_index %>% filter(main_op_specialty == specialty) |> pull(main_op_type) |> unique()
   
-proc_index_plot <- ggplot(chart_data, 
-                          aes(x = op_mth, y = prop, fill = ras_proc, 
-                              tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                               "\n % phase 1 and 2 procedures; ", prop, "%",
-                                               "\n No. phase 1 and 2 procedures: ", n,
-                                               "\n Month: ", op_mth),
-                              data_id = ras_proc)) + 
-  geom_bar(stat = "identity") +
-  facet_wrap(~ hospital_name_grp)+ 
-  #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
-  labs(x = "Month", 
-       y = "% procedures performed using RAS",
-       fill = "Surgical approach",
-       caption = "Data from SMR01",
-       subtitle = paste0("Index procedure: ", main_op_type))+ 
-  scale_fill_manual(values = c("#94AABD","#12436D"))+
-  theme_phs_ylines() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1))
-
-return(proc_index_plot)
+  chart_data <- proc_index %>% 
+    filter(hospital_name_grp %in% hospitals,
+           main_op_specialty == specialty) %>%
+    ungroup() %>%
+    complete(op_mth = all_months,
+             main_op_type = proc,
+             hospital_name_grp = hospitals,
+             fill = list(n = 0,
+                         prop = 100,
+                         ras_proc = "No procedures"))
+  
+  proc_index_plot <- ggplot(chart_data, 
+                            aes(x = op_mth, y = prop, fill = ras_proc, 
+                                tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                                 "\n % phase 1 and 2 procedures; ", prop, "%", # does this tooltip make sense? aren't we looking at one procedure?
+                                                 "\n No. phase 1 and 2 procedures: ", n,
+                                                 "\n Month: ", op_mth),
+                                data_id = op_mth)) + 
+    geom_bar_interactive(stat = "identity") +
+    facet_wrap(~ hospital_name_grp)+ 
+    #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
+    labs(x = "Month", 
+         y = "% procedures performed using RAS",
+         fill = "Surgical approach",
+         caption = "Data from SMR01",
+         subtitle = paste0("Index procedure: ", proc))+ 
+    scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
+    scale_x_datetime(
+      date_breaks = "1 month",
+      date_labels = "%b %Y"
+    ) +
+    theme_phs_ylines() +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  
+  return(proc_index_plot)
 }
 
 make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty tabs
