@@ -55,7 +55,13 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         includeHTML(paste0(script_dir, "/resources/mgmt-info-distribution-warning.html")),
-        card(includeHTML(paste0(script_dir, "/resources/about.html")))
+        card(card_header("About this report"),
+             includeHTML(paste0(script_dir, "/resources/about.html"))),
+        card(card_header("Supplementary information"),
+             span("The classification of procedures into 'phase 1', 'phase 2' and 'non-priority' can be accessed here:"),
+             downloadthis::download_file(paste0(script_dir, "/resources/SRASA procedure codes and phasing.xlsx"),
+                                         button_label = "Priority procedure classification table",
+                                         self_contained = TRUE))
       )
     ),
     nav_panel(
