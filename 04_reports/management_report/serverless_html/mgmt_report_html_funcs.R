@@ -85,9 +85,9 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(spec_procsmth$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Number of Phase 1 {spec} procedures performed per month, by approach ({start_date} - {latest_date})",
+                                 "Number of procedures performed by RAS per month by procedure phase, by specialty ({start_date} - {latest_date})",
                                  spec = .x),
-                               make_plot_candidate_procs(hospitals, .x)
+                               make_plot_spec_procphase(hospitals, .x)
                   )
                 )
         )
@@ -95,6 +95,13 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     ),
     nav_panel(
       "By procedure",
+      layout_columns(
+        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        "placeholder"
+      )
+    ),
+    nav_panel(
+      "Data quality",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         "placeholder"

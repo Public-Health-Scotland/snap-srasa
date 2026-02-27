@@ -1,3 +1,5 @@
+### Setup ----------------------------------------------------------------------
+
 theme_phs_ylines <- function(){
   list(
     theme_phs(),
@@ -6,7 +8,7 @@ theme_phs_ylines <- function(){
   )
 }
 
-
+### Utilisation tab ------------------------------------------------------------
 make_plot_util_procsmth <- function(hospitals, hosp_colours){
   chart_data <- util_procsmth %>% 
     filter(hospital_name_grp %in% hospitals) %>% 
@@ -61,7 +63,7 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
   return(util_procsday_plot)
 }
 
-## Spec access
+### Specialty level tab -------------------------------------------------------
 
 make_plot_spec_procsmth <- function(hospitals, spec_colours){
   chart_data <- spec_procsmth %>% 
@@ -91,79 +93,237 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
   return(spec_procsmth_plot)
 }
 
-make_plot_candidate_procs <- function(hospitals, specialty){
-  chart_data <- spec_procsmth |>
-    mutate(op_mth = format(op_mth, "%Y-%m"),
-           hospital_name_grp = str_remove(hospital_name_grp, "'")) |>
-    complete(
-      hospital_name_grp,
-      op_mth,
-      main_op_specialty,
-      ras_proc,
-      fill = list(n = 0)
-    )  |>
-    filter(hospital_name_grp %in% hospitals,
-           main_op_specialty == specialty)
+make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs specialty tabs
+  #"Number of procedures performed by RAS per month by procedure phase, by specialty ({start_date} - {latest_date})", (already in there)
   
-  candidate_procs_plot <- ggplot(data = chart_data, 
-                                 aes(x = op_mth, y = n, fill = ras_proc,
-                                     tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                      "\n Surgical Specialty; ", main_op_specialty,
-                                                      "\n Approach: ", ras_proc,
-                                                      "\n No. procedures: ", n,
-                                                      "\n Month: ", op_mth),
-                                     data_id = op_mth)) +
-    geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
+  chart_data <- spec_procphase %>% 
+    filter(ras_proc == "RAS" &
+             hospital_name_grp %in% hospitals) %>% 
+    mutate(main_op_phase = factor(main_op_phase, 
+                                  levels = c("phase1", "phase2", "non-priority")),
+           op_mth = format(op_mth, "%Y-%m")) %>% 
+    filter(main_op_specialty == specialty)
+  
+  spec_procphase_plot <- ggplot(chart_data, 
+                                aes(x = op_mth, y = n, fill = fct_rev(main_op_phase),
+                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                                     "\n Procedure phase; ", main_op_phase,
+                                                     "\n No. RAS procedures: ", n,
+                                                     "\n Month: ", op_mth),
+                                    data_id = op_mth)) +
+    geom_bar_interactive(stat = "identity", hover_nearest = TRUE) +
     labs(x = "Month", 
-         y = "Number of procedures", 
-         fill = "Approach",
-         caption = "Data from SMR01") + 
-    scale_fill_manual(values = setNames(phs_colour_values[c(1, 11)], c("RAS", "Non-RAS"))) +
-    #coord_cartesian(ylim = c(0, max(5, max(chart_data$n, na.rm = TRUE)))) +
-    scale_y_continuous(
-      breaks = scales::breaks_width(5),
-    ) +
-    expand_limits(y = 5) +
+         y = "Total RAS procedures", 
+         fill = "Procedure phase",
+         caption = "Data from SMR01",
+         subtitle = paste0())+ 
+    scale_fill_manual(values = c("#b1b1b1","#3F085C","#3E8ECC"))+
+    facet_wrap(~hospital_name_grp)+
     theme_phs_ylines() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-    facet_wrap(~hospital_name_grp)
+    theme(legend.position = 'bottom',
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(candidate_procs_plot)
+  return(spec_procphase_plot)
 }
 
-make_plot_spec_funnel <- function(month, specialty, hosp_colours){
-  chart_data <- spec_procsmth |>
-    pivot_wider(values_from = n,
-                names_from = ras_proc,
-                values_fill = 0) |>
-    mutate(n = RAS + `Non-RAS`,
-           prop = RAS / n,
-           hospital_name_grp = str_remove(hospital_name_grp, "'")) |>
-    filter(hospital_name_grp != "All") |>
-    filter(op_mth == month,
-           main_op_specialty == specialty)
+### Procedure level tab --------------------------------------------------------
+
+make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialty tabs
+  #"Proportion of each specialty's index procedure performed by RAS, by specialty ({start_date} - {latest_date})", #add threshold after steering grp
   
-  funnel <- chart_data |>
-    ggplot(
-      aes(x = n,
-          y = prop,
-          fill = hospital_name_grp,
-          tooltip = paste0(hospital_name_grp,
-                           "\nNumber of procedures: ", n,
-                           "\nProp. performed robotically", ": ", format(prop, nsmall=2, digits = 2)),
-          data_id = hospital_name_grp)) +
-    geom_funnel_lines() +
-    scale_funnel_phs() +
-    geom_point_interactive(size = 3, shape = 21, hover_nearest = TRUE) +
-    scale_fill_manual(values = hosp_colours,
-                      na.value = "#3D3D3D",
-                      guide = NULL) +
-    labs(x="Number of procedures",
-         y="Prop. performed robotically") +
-    theme_phs()
+  chart_data <- proc_index %>% 
+    filter(hospital_name_grp %in% hospitals &
+             main_op_specialty == specialty)
   
-  return(funnel)
+proc_index_plot <- ggplot(chart_data, 
+                          aes(x = op_mth, y = prop, fill = ras_proc, 
+                              tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                               "\n % phase 1 and 2 procedures; ", prop, "%",
+                                               "\n No. phase 1 and 2 procedures: ", n,
+                                               "\n Month: ", op_mth),
+                              data_id = ras_proc)) + 
+  geom_bar(stat = "identity") +
+  facet_wrap(~ hospital_name_grp)+ 
+  #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
+  labs(x = "Month", 
+       y = "% procedures performed using RAS",
+       fill = "Surgical approach",
+       caption = "Data from SMR01",
+       subtitle = paste0("Index procedure: ", main_op_type))+ 
+  scale_fill_manual(values = c("#94AABD","#12436D"))+
+  theme_phs_ylines() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+return(proc_index_plot)
 }
+
+make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty tabs
+  #"Procedures carried out in each specialty as a proportion of total procedures ({start_date} - {latest_date})",
+  
+  chart_data <- proc_spec %>% 
+    filter(hospital_name_grp %in% hospitals &
+             main_op_specialty == specialty)
+  
+  proc_spec_plot <-  ggplot(chart_data,
+                            aes(x = op_mth, y = prop, fill = main_op_type, 
+                                tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                                 "\n % procedure type performed by RAS; ", prop, "%",
+                                                 "\n No. procedure type conducted: ", n,
+                                                 "\n Month: ", op_mth),
+                                data_id = main_op_type)) +
+    geom_bar(stat = "identity") +
+    facet_wrap(.~hospital_name_grp) +
+    labs(x = "Month", 
+         y = "% procedure type performed by RAS",
+         fill = "Procedure type",
+         caption = "Data from SMR01")+ 
+    scale_fill_manual(values = c("#12436D","#28A197", "#801650", "#F46A25",
+                                 "#3E8ECC", "#3F085C", "#3D3D3D","#94AABD", 
+                                 "#B4DEDB", "#CCA2B9", "#FBC3A8", "#A8CCE8", 
+                                 "#A285D1", "#A8A8A8"))+
+    theme_phs_ylines() +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1))
+  
+  return(proc_spec_plot)
+}
+
+### Data Quality/comparison tab ------------------------------------------------
+
+make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
+  #"Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({start_date} - {latest_date})",
+  
+  chart_data <- dq_comp %>% 
+    rename(smr01 = n, intuitive = int_n) %>% 
+    pivot_longer(smr01:intuitive, names_to = "dataset", values_to = "n_procs") %>% 
+    filter(hospital_name_grp %in% hospitals)
+  
+  dq_comp_plot <- ggplot(chart_data, 
+                         aes(x = op_mth, y = n_procs, fill = dataset,
+                             tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                              "\n Data source; ", dataset,
+                                              "\n No. RAS procedures recorded: ", n_procs,
+                                              "\n Month: ", op_mth),
+                             data_id = dataset)) +
+    geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
+    labs(x = "Month", 
+         y = "No. recorded RAS procedures", 
+         fill = "Data source",
+         caption = "Data from SMR01 and Intuitive",
+         subtitle = paste0())+ 
+    scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
+    facet_wrap(~hospital_name_grp)+
+    theme_phs_ylines() +
+    theme(legend.position = 'bottom',
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  
+  return(dq_comp_plot)
+}
+
+make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialty tabs
+  #"Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({start_date} - {latest_date})",
+  
+  chart_data <- dq_compspec %>% 
+    filter(hospital_name_grp %in% hospitals &
+             main_op_specialty == specialty)
+
+dq_compspec_plot <- ggplot(chart_data, 
+                           aes(x = op_mth, y = n_procs, fill = dataset, 
+                               tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                                "\n Data source; ", dataset,
+                                                "\n No. RAS procedures recorded: ", n_procs,
+                                                "\n Month: ", op_mth),
+                               data_id = dataset)) +
+  geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
+  labs(x = "Month", 
+       y = "No. recorded RAS procedures", 
+       fill = "Data source",
+       caption = "Data from SMR01 and Intuitive",
+       subtitle = paste0())+ 
+  scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
+  facet_wrap(~hospital_name_grp)+
+  theme_phs_ylines() +
+  theme(legend.position = 'bottom',
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+return(dq_compspec_plot)
+}
+
+# 
+# make_plot_candidate_procs <- function(hospitals, specialty){
+#   chart_data <- spec_procsmth |>
+#     mutate(op_mth = format(op_mth, "%Y-%m"),
+#            hospital_name_grp = str_remove(hospital_name_grp, "'")) |>
+#     complete(
+#       hospital_name_grp,
+#       op_mth,
+#       main_op_specialty,
+#       ras_proc,
+#       fill = list(n = 0)
+#     )  |>
+#     filter(hospital_name_grp %in% hospitals,
+#            main_op_specialty == specialty)
+#   
+#   candidate_procs_plot <- ggplot(data = chart_data, 
+#                                  aes(x = op_mth, y = n, fill = ras_proc,
+#                                      tooltip = paste0("Hospital Location: ", hospital_name_grp,
+#                                                       "\n Surgical Specialty; ", main_op_specialty,
+#                                                       "\n Approach: ", ras_proc,
+#                                                       "\n No. procedures: ", n,
+#                                                       "\n Month: ", op_mth),
+#                                      data_id = op_mth)) +
+#     geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
+#     labs(x = "Month", 
+#          y = "Number of procedures", 
+#          fill = "Approach",
+#          caption = "Data from SMR01") + 
+#     scale_fill_manual(values = setNames(phs_colour_values[c(1, 11)], c("RAS", "Non-RAS"))) +
+#     #coord_cartesian(ylim = c(0, max(5, max(chart_data$n, na.rm = TRUE)))) +
+#     scale_y_continuous(
+#       breaks = scales::breaks_width(5),
+#     ) +
+#     expand_limits(y = 5) +
+#     theme_phs_ylines() +
+#     theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+#     facet_wrap(~hospital_name_grp)
+#   
+#   return(candidate_procs_plot)
+# }
+# 
+# make_plot_spec_funnel <- function(month, specialty, hosp_colours){
+#   chart_data <- spec_procsmth |>
+#     pivot_wider(values_from = n,
+#                 names_from = ras_proc,
+#                 values_fill = 0) |>
+#     mutate(n = RAS + `Non-RAS`,
+#            prop = RAS / n,
+#            hospital_name_grp = str_remove(hospital_name_grp, "'")) |>
+#     filter(hospital_name_grp != "All") |>
+#     filter(op_mth == month,
+#            main_op_specialty == specialty)
+#   
+#   funnel <- chart_data |>
+#     ggplot(
+#       aes(x = n,
+#           y = prop,
+#           fill = hospital_name_grp,
+#           tooltip = paste0(hospital_name_grp,
+#                            "\nNumber of procedures: ", n,
+#                            "\nProp. performed robotically", ": ", format(prop, nsmall=2, digits = 2)),
+#           data_id = hospital_name_grp)) +
+#     geom_funnel_lines() +
+#     scale_funnel_phs() +
+#     geom_point_interactive(size = 3, shape = 21, hover_nearest = TRUE) +
+#     scale_fill_manual(values = hosp_colours,
+#                       na.value = "#3D3D3D",
+#                       guide = NULL) +
+#     labs(x="Number of procedures",
+#          y="Prop. performed robotically") +
+#     theme_phs()
+#   
+#   return(funnel)
+# }
 
 # make_res_equity_funnel <- function(month, specialty, hb_colours){
 #   chart_data <- equity_resprop |>

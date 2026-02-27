@@ -18,7 +18,8 @@ gdtools::register_gfont("Open Sans")
 
 # controls ----------------------------------------------------------------
 
-date_to <- as.Date("2025-11-01")
+date_to <- Sys.Date() %>% 
+  lubridate::floor_date("month") %m-% months(3)
 date_from <- date_to %m-% months(12)
 health_boards <- list(
   'Ayrshire & Arran',
@@ -38,13 +39,25 @@ util_procsmth <- read_parquet(paste0(mgmt_data_dir, "util_procsmth.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
 util_procsday <- read_parquet(paste0(mgmt_data_dir, "util_procsday.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
-
-equity_agesex <- read_parquet(paste0(mgmt_data_dir, "equity_agesex.parquet"))
-equity_agemean <- read_parquet(paste0(mgmt_data_dir, "equity_agemean.parquet"))
-equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
-equity_resprop <- read_parquet(paste0(mgmt_data_dir, "equity_resprop.parquet"))
+# 
+# equity_agesex <- read_parquet(paste0(mgmt_data_dir, "equity_agesex.parquet"))
+# equity_agemean <- read_parquet(paste0(mgmt_data_dir, "equity_agemean.parquet"))
+# equity_simd <- read_parquet(paste0(mgmt_data_dir, "equity_simd.parquet"))
+# equity_resprop <- read_parquet(paste0(mgmt_data_dir, "equity_resprop.parquet"))
 
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+spec_procphase <- read_parquet(paste0(mgmt_data_dir, "spec_procphase.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+
+proc_index <- read_parquet(paste0(mgmt_data_dir, "proc_index.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+proc_spec <- read_parquet(paste0(mgmt_data_dir, "proc_spec.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+
+dq_comp <- read_parquet(paste0(mgmt_data_dir, "dq_comp.parquet")) |>
+  filter(op_mth < date_to, op_mth >= date_from)
+dq_compspec <- read_parquet(paste0(mgmt_data_dir, "dq_compspec.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
 
 # hospital lookups

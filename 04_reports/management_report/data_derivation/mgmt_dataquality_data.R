@@ -43,29 +43,6 @@ dq_comp <- smr01_procsmth %>%
 
 #save out data
 write_parquet(dq_comp, paste0(data_dir, "management_report/dq_comp.parquet"))
- 
-chart_data <- dq_comp %>% 
-  rename(smr01 = n, intuitive = int_n) %>% 
-  pivot_longer(smr01:intuitive, names_to = "dataset", values_to = "n_procs")
-
-dq_comp_plot <- ggplot(chart_data, aes(x = op_mth, y = n_procs, fill = dataset,
-                       tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                        "\n Data source; ", dataset,
-                                        "\n No. RAS procedures recorded: ", n_procs,
-                                        "\n Month: ", op_mth),
-                       data_id = dataset)) +
-  geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
-  labs(x = "Month", 
-       y = "No. recorded RAS procedures", 
-       fill = "Data source",
-       caption = "Data from SMR01 and Intuitive",
-       subtitle = paste0())+ 
-  scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
-  facet_wrap(~hospital_name_grp)+
-  #theme_phs_ylines() +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
-dq_comp_plot
 
 
 ### Specialty-level comparison of intuitive and smr01 utilisation stats --------
@@ -104,24 +81,3 @@ dq_compspec <- read_parquet(paste0(data_dir, "management_report/spec_procsmth.pa
 #save out data
 write_parquet(dq_compspec, paste0(data_dir, "management_report/dq_compspec.parquet"))
 
-chart_data <- dq_compspec %>% 
-  filter(main_op_specialty == "ENT")
-
-dq_compspec_plot <- ggplot(chart_data, aes(x = op_mth, y = n_procs, fill = dataset, #and needs to be split by specialty across tabs
-                                       tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                        "\n Data source; ", dataset,
-                                                        "\n No. RAS procedures recorded: ", n_procs,
-                                                        "\n Month: ", op_mth),
-                                       data_id = dataset)) +
-  geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
-  labs(x = "Month", 
-       y = "No. recorded RAS procedures", 
-       fill = "Data source",
-       caption = "Data from SMR01 and Intuitive",
-       subtitle = paste0())+ 
-  scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
-  facet_wrap(~hospital_name_grp)+
-  #theme_phs_ylines() +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
-dq_compspec_plot
