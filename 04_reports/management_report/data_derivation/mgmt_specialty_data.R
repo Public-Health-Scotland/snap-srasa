@@ -48,8 +48,6 @@ ras_cand_data <- ras_cand_data %>% #some aberrant coding liekly due to transfers
                                        .default = hospital_name),
          hospital_name_grp = factor(hospital_name_grp, levels = hosp_order))
 
-
-### Hospital-level equity ------------------------------------------------------
 # show at hospital level as more relevant to specialty than hb
 
 ##### Total monthly no. ras procs by specialty & location --------------------
@@ -66,7 +64,7 @@ spec_procsmth <- ras_cand_data %>%
 
 write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.parquet"))
 
-### Phases of conducted ras procs per specialty
+### Phases of conducted ras procs per specialty --------------------------------
 spec_procphase <- ras_cand_data %>%
   group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
   summarise(n = n()) %>% 
@@ -80,29 +78,6 @@ spec_procphase <- ras_cand_data %>%
 
 write_parquet(spec_procphase, paste0(data_dir, "management_report/spec_procphase.parquet"))
 
-chart_data <- spec_procphase %>% 
-  filter(ras_proc == "RAS" &
-           hospital_name_grp != "All") %>% 
-  mutate(main_op_phase = factor(main_op_phase, levels = c("phase1", "phase2", "non-priority"))) 
-  
-spec_procphase_plot <- ggplot(chart_data, aes(x = op_mth, y = n, fill = fct_rev(main_op_phase), #and this need to be split across specialty tabs
-             tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                              "\n Procedure phase; ", main_op_phase,
-                              "\n No. RAS procedures: ", n,
-                              "\n Month: ", op_mth),
-             data_id = op_mth)) +
-  geom_bar_interactive(stat = "identity", hover_nearest = TRUE) +
-  labs(x = "Month", 
-       y = "Total RAS procedures", 
-       fill = "Procedure phase",
-       caption = "Data from SMR01",
-       subtitle = paste0())+ 
-  scale_fill_manual(values = c("#b1b1b1","#3F085C","#3E8ECC"))+
-  facet_wrap(~hospital_name_grp)+
-  #theme_phs_ylines() +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
-spec_procphase_plot
 
 
 

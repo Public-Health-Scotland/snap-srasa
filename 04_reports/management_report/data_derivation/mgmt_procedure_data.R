@@ -52,7 +52,7 @@ ras_proc_data <- ras_proc_data %>% #some aberrant coding liekly due to transfers
 
 
 
-# Index proc, % ras vs non-ras
+### Index proc, % ras vs non-ras -----------------------------------------------
 
 index_proc_list <- c("Rectal resection", "Hysterectomy", "Lobectomy of lung", "Prostatectomy", "Tonsillectomy")
 
@@ -77,27 +77,8 @@ proc_index <- ras_proc_data %>%
 
 write_parquet(proc_index, paste0(data_dir, "management_report/proc_index.parquet"))
 
-index_proc_plot <- ggplot(proc_index, aes(x = op_mth, y = prop, fill = ras_proc, #and this need to be split across specialty tabs
-                                          tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                           "\n % phase 1 and 2 procedures; ", prop, "%",
-                                                           "\n No. phase 1 and 2 procedures: ", n,
-                                                           "\n Month: ", op_mth),
-                                          data_id = ras_proc)) + 
-  geom_bar(stat = "identity") +
-  facet_wrap(~ hospital_name_grp)+ 
-  #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
-  labs(x = "Month", 
-       y = "% procedures performed using RAS",
-       fill = "Surgical approach",
-       caption = "Data from SMR01",
-       subtitle = paste0("Index procedure: ", main_op_type))+ 
-  scale_fill_manual(values = c("#94AABD","#12436D"))+
-  #theme_phs_ylines() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1))
-index_proc_plot
 
-### All RAS procs by specialty split by procedure type 
+### All RAS procs by specialty split by procedure type -------------------------
 proc_spec <- ras_proc_data %>% 
   filter(ras_proc == "RAS") %>% 
   group_by(main_op_type, main_op_specialty, op_mth, hospital_name_grp) %>% 
@@ -107,23 +88,3 @@ proc_spec <- ras_proc_data %>%
          prop = round(n/tot_n*100, 2)) 
 
 write_parquet(proc_spec, paste0(data_dir, "management_report/proc_spec.parquet"))
-
-ggplot(proc_spec, aes(x = op_mth, y = prop, fill = main_op_type, #and this need to be split across specialty tabs
-                       tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                        "\n % procedure type performed by RAS; ", prop, "%",
-                                        "\n No. procedure type conducted: ", n,
-                                        "\n Month: ", op_mth),
-                       data_id = main_op_type)) +
-  geom_bar(stat = "identity") +
-  facet_wrap(.~hospital_name_grp) +
-  labs(x = "Month", 
-       y = "% procedure type performed by RAS",
-       fill = "Procedure type",
-       caption = "Data from SMR01")+ 
-  scale_fill_manual(values = c("#12436D","#28A197", "#801650", "#F46A25",
-                               "#3E8ECC", "#3F085C", "#3D3D3D","#94AABD", 
-                               "#B4DEDB", "#CCA2B9", "#FBC3A8", "#A8CCE8", 
-                               "#A285D1", "#A8A8A8"))+
-  #theme_phs_ylines() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_text(angle = 45, hjust = 1))
