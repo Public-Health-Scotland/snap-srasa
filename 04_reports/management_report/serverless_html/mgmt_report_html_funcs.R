@@ -23,6 +23,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
     start_date <- as_date(start_date)
   }
   
+  date_string <- paste0(format(start_date, "%B %Y"), " - ", format(latest_month, "%B %Y"))
+  
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
     setNames(hospitals)
   
@@ -70,7 +72,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
-          title = str_glue("Total number of RAS procedures monthly by hospital ({start_date} - {latest_date})"),
+          title = str_glue("Total number of RAS procedures monthly by hospital ({date_string})"),
           plot = make_plot_util_procsmth(hospitals, hosp_colours)
         ),
         ggiraph_card(
@@ -84,7 +86,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
-          title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({start_date} - {latest_date})"),
+          title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({date_string})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
         do.call(navset_card_tab,
@@ -92,7 +94,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(spec_procsmth$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Number of procedures performed by RAS per month by procedure phase, by specialty ({start_date} - {latest_date})",
+                                 "Number of procedures performed by RAS per month by procedure phase, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_spec_procphase(hospitals, .x)
                   )
@@ -109,13 +111,14 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(proc_index$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Proportion of each specialty's index procedure performed by RAS, by specialty ({start_date} - {latest_date})",
+                                 "Proportion of each specialty's index procedure performed by RAS, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_proc_index(hospitals, .x)
                   )
                 )
         ),
         card(
+          card_header(str_glue("Number and proportion of procedure types performed by RAS per month, by specialty ({date_string})")),
           make_table_proc_spec(hospitals),
           full_screen = T,
           fillable = F
@@ -126,7 +129,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       "Data quality",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({start_date} - {latest_date})"),
+        ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({date_string})"),
                      make_plot_dq_comp(hospitals)
                      ),
         do.call(navset_card_tab,
@@ -134,7 +137,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(dq_compspec$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({start_date} - {latest_date})",
+                                 "Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_dq_compspec(hospitals, .x)
                   )
