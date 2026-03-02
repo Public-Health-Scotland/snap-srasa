@@ -218,6 +218,40 @@ make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty
   return(proc_spec_plot)
 }
 
+make_table_proc_spec <- function(hospitals){
+  proc_spec %>% 
+    filter(hospital_name_grp %in% hospitals) %>%
+    select(
+      Month = op_mth,
+      Hospital = hospital_name_grp,
+      Specialty = main_op_specialty,
+      Procedure = main_op_type,
+      `Number of procedures` = n,
+      `% within specialty` = prop) %>%
+    datatable(extensions = c('Select', 'SearchPanes'),
+              selection = 'none',
+              rownames = FALSE,
+              height = "100%",
+              options = list(dom = 'Prtip',
+                             searchPanes = list(
+                               controls = FALSE,
+                               viewCount = FALSE
+                             ),
+                             columnDefs = list(
+                               list(searchPanes = list(show = FALSE),
+                                    targets = 3:5)
+                             )
+              )) %>%
+    formatDate(
+      "Month", 
+      method = "toLocaleString",
+      params = list(
+        "en-GB",
+        list(month = "long", year = "2-digit")
+      )
+    )
+}
+
 ### Data Quality/comparison tab ------------------------------------------------
 
 make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs

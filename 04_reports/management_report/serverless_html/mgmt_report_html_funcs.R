@@ -115,6 +115,11 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   )
                 )
         ),
+        card(
+          make_table_proc_spec(hospitals),
+          full_screen = T,
+          fillable = F
+        )
       )
     ),
     nav_panel(
