@@ -224,8 +224,8 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
   #"Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({start_date} - {latest_date})",
   
   chart_data <- dq_comp %>% 
-    rename(smr01 = n, intuitive = int_n) %>% 
-    pivot_longer(smr01:intuitive, names_to = "dataset", values_to = "n_procs") %>% 
+    rename(SMR01 = n, Intuitive = int_n) %>% 
+    pivot_longer(SMR01:Intuitive, names_to = "dataset", values_to = "n_procs") %>% 
     filter(hospital_name_grp %in% hospitals)
   
   dq_comp_plot <- ggplot(chart_data, 
@@ -241,7 +241,11 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
          fill = "Data source",
          caption = "Data from SMR01 and Intuitive",
          subtitle = paste0())+ 
-    scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
+    scale_fill_manual(values = c("#3E8ECC","#3F085C")) +
+    scale_x_datetime(
+      date_breaks = "1 month",
+      date_labels = "%b %Y"
+    ) +
     facet_wrap(~hospital_name_grp)+
     theme_phs_ylines() +
     theme(legend.position = 'bottom',
@@ -253,9 +257,21 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
 make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialty tabs
   #"Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({start_date} - {latest_date})",
   
+  all_months <- dq_compspec$op_mth |> unique() |> sort() |> as.Date()
+  
   chart_data <- dq_compspec %>% 
     filter(hospital_name_grp %in% hospitals &
-             main_op_specialty == specialty)
+             main_op_specialty == specialty) %>%
+    mutate(dataset = replace_values(dataset,
+                                    "intuitive" ~ "Intuitive",
+                                    "smr01" ~ "SMR01"),
+           op_mth = as.Date(op_mth)) %>%
+    ungroup() %>%
+    complete(op_mth = all_months,
+             main_op_specialty = specialty,
+             hospital_name_grp = hospitals,
+             dataset = c("Intuitive", "SMR01"),
+             fill = list(n_procs = 0))
 
 dq_compspec_plot <- ggplot(chart_data, 
                            aes(x = op_mth, y = n_procs, fill = dataset, 
@@ -264,13 +280,21 @@ dq_compspec_plot <- ggplot(chart_data,
                                                 "\n No. RAS procedures recorded: ", n_procs,
                                                 "\n Month: ", op_mth),
                                data_id = dataset)) +
-  geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
+  geom_bar_interactive(stat = "identity", position = "dodge", width = 20, hover_nearest = TRUE) +
   labs(x = "Month", 
        y = "No. recorded RAS procedures", 
        fill = "Data source",
        caption = "Data from SMR01 and Intuitive",
        subtitle = paste0())+ 
-  scale_fill_manual(values = c("#3E8ECC","#3F085C"))+
+  scale_fill_manual(values = c("#3E8ECC","#3F085C")) + 
+  scale_y_continuous(
+    breaks = scales::breaks_width(5),
+  ) +
+  expand_limits(y = 5) +
+  scale_x_date(
+    date_breaks = "1 month",
+    date_labels = "%b %Y"
+  ) +
   facet_wrap(~hospital_name_grp)+
   theme_phs_ylines() +
   theme(legend.position = 'bottom',

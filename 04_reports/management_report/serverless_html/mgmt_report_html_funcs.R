@@ -121,7 +121,20 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       "Data quality",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        "placeholder"
+        ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({start_date} - {latest_date})"),
+                     make_plot_dq_comp(hospitals)
+                     ),
+        do.call(navset_card_tab,
+                args = map(
+                  sort(unique(dq_compspec$main_op_specialty)),
+                  ~ggiraph_nav(capitalise_first(.x),
+                               title = str_glue(
+                                 "Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({start_date} - {latest_date})",
+                                 spec = .x),
+                               make_plot_dq_compspec(hospitals, .x)
+                  )
+                )
+        )
       )
     ),
     

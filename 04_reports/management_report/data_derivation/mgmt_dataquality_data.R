@@ -15,7 +15,14 @@ intuitive_lookup <- read.csv(paste0(data_dir, "lookups/intuitive_spec_lookup.csv
 
 ### make monthly total for intuitive data ------------------------------------
 intuitive_comp <- intuitive_data %>% 
-  left_join(intuitive_lookup, by = join_by(procedure_type == int_procedure)) %>% 
+  left_join(intuitive_lookup, by = join_by(procedure_type == int_procedure)) %>%
+  mutate(srasa_specialty = str_remove(srasa_specialty, #collapse unlisted into main specialty
+                                        " - unlisted"),
+         srasa_specialty = replace_values(srasa_specialty,
+                                          "General surgery" ~ "General surgery (other)",
+                                          "Gynecology" ~ "Gynaecology",
+                                          NA ~ "Unspecified"
+                                          )) %>%
   group_by(hospital_name, srasa_specialty, op_month) %>% 
   summarise(monthly_n = n()) %>% 
   ungroup() 
