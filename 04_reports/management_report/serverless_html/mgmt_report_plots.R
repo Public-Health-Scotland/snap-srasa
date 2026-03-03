@@ -163,8 +163,9 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
   proc_index_plot <- ggplot(chart_data, 
                             aes(x = op_mth, y = prop, fill = ras_proc, 
                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                 "\n % phase 1 and 2 procedures; ", prop, "%", # does this tooltip make sense? aren't we looking at one procedure?
-                                                 "\n No. phase 1 and 2 procedures: ", n,
+                                                 "\n ", ras_proc,
+                                                 "\n % of procedures: ", prop, "%",
+                                                 "\n No. of procedures: ", n,
                                                  "\n Month: ", op_mth),
                                 data_id = op_mth)) + 
     geom_bar_interactive(stat = "identity") +
