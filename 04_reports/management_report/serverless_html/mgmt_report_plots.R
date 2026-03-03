@@ -25,7 +25,7 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     labs(x = "Month", 
          y = "Number of cases", 
          fill = NULL,
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = hosp_colours) +
     guides(
@@ -52,7 +52,7 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
     geom_hline_interactive(yintercept = 1, linetype = "dashed", color = "grey30")+
     labs(x = "Day of the Week", 
          y = "Monthly mean no. RAS procedures", 
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = hosp_colours)+
     facet_wrap(.~ hospital_name_grp) +
@@ -82,7 +82,7 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
     labs(x = "Month", 
          y = "Number of cases", 
          fill = "Surgical Specialty",
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          #subtitle = paste0("Patients receiving RAS only")
          )+ 
     scale_fill_manual(values = spec_colours) +
@@ -122,7 +122,7 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
     labs(x = "Month", 
          y = "Total RAS procedures", 
          fill = "Procedure phase",
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = c("Non-priority" = "#b1b1b1","Phase 1" = "#3F085C", "Phase 2" = "#3E8ECC")) + 
     scale_y_continuous(
@@ -174,7 +174,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     labs(x = "Month", 
          y = "% procedures performed using RAS",
          fill = "Surgical approach",
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, all index procedures",
          subtitle = paste0("Index procedure: ", proc))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
     scale_x_datetime(
@@ -207,7 +207,7 @@ make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty
     labs(x = "Month", 
          y = "% procedure type performed by RAS",
          fill = "Procedure type",
-         caption = "Data from SMR01")+ 
+         caption = "Data from SMR01, all candidate procedures")+ 
     scale_fill_manual(values = c("#12436D","#28A197", "#801650", "#F46A25",
                                  "#3E8ECC", "#3F085C", "#3D3D3D","#94AABD", 
                                  "#B4DEDB", "#CCA2B9", "#FBC3A8", "#A8CCE8", 
@@ -274,7 +274,7 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
     labs(x = "Month", 
          y = "No. recorded RAS procedures", 
          fill = "Data source",
-         caption = "Data from SMR01 and Intuitive",
+         caption = "Data from SMR01 and Intuitive, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = c("#3E8ECC","#3F085C")) +
     scale_x_datetime(
@@ -319,7 +319,7 @@ dq_compspec_plot <- ggplot(chart_data,
   labs(x = "Month", 
        y = "No. recorded RAS procedures", 
        fill = "Data source",
-       caption = "Data from SMR01 and Intuitive",
+       caption = "Data from SMR01 and Intuitive, RAS procedures only",
        subtitle = paste0())+ 
   scale_fill_manual(values = c("#3E8ECC","#3F085C")) + 
   scale_y_continuous(
