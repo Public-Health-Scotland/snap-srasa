@@ -46,7 +46,8 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
   chart_data <- util_procsday %>% 
     filter(op_mth == month,
            hospital_name_grp %in% hospitals) %>% 
-    mutate(op_mth = format(op_mth, "%Y-%m"))
+    mutate(op_mth = format(op_mth, "%Y-%m"),
+           hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
   util_procsday_plot <- ggplot(data = chart_data, 
                                aes(x = dow, y = mean_procs_pd, fill = hospital_name_grp,
