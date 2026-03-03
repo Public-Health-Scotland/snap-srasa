@@ -68,25 +68,25 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       )
     ),
     nav_panel(
-      "Total utilisation",
+      "1. Total utilisation",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
-          title = str_glue("Total number of RAS procedures monthly by hospital ({date_string})"),
+          title = str_glue("1.1 - Total number of procedures performed by RAS monthly ({date_string})"),
           plot = make_plot_util_procsmth(hospitals, hosp_colours)
         ),
         ggiraph_card(
-          title = str_glue("Mean no. RAS procedures performed per day, by hospital ({format(latest_month, '%B %Y')})"),
+          title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest month ({format(latest_month, '%B %Y')})"),
           plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours)
         )
       )
     ),
     nav_panel(
-      "By specialty",
+      "2. By specialty",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(
-          title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({date_string})"),
+          title = str_glue("2.1 - Number of procedures performed by RAS monthly under each specialty ({date_string})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
         do.call(navset_card_tab,
@@ -94,7 +94,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(spec_procsmth$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Number of procedures performed by RAS per month by procedure phase, by specialty ({date_string})",
+                                 "2.2 - Number of procedures performed by RAS monthly according to procedure prioritisation phase, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_spec_procphase(hospitals, .x)
                   )
@@ -103,7 +103,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       )
     ),
     nav_panel(
-      "By procedure",
+      "3. By procedure",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         do.call(navset_card_tab,
@@ -111,14 +111,14 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(proc_index$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Proportion of each specialty's index procedure performed by RAS, by specialty ({date_string})",
+                                 "3.1 - Proportion of the index procedure performed by RAS monthly, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_proc_index(hospitals, .x)
                   )
                 )
         ),
         card(
-          card_header(str_glue("Number and proportion of procedure types performed by RAS per month, by specialty ({date_string})")),
+          card_header(str_glue("3.2 - Table of procedures performed by RAS monthly, with proportion of specialty utilisation attributable to each procedure type ({date_string})")),
           make_table_proc_spec(hospitals),
           full_screen = T,
           fillable = F
@@ -126,10 +126,10 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       )
     ),
     nav_panel(
-      "Data quality",
+      "4. Data quality",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({date_string})"),
+        ggiraph_card(str_glue("4.1 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly ({date_string})"),
                      make_plot_dq_comp(hospitals)
                      ),
         do.call(navset_card_tab,
@@ -137,7 +137,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                   sort(unique(dq_compspec$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
                                title = str_glue(
-                                 "Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({date_string})",
+                                 "4.2 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly, by specialty ({date_string})",
                                  spec = .x),
                                make_plot_dq_compspec(hospitals, .x)
                   )
