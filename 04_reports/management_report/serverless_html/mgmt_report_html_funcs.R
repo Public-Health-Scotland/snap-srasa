@@ -72,7 +72,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         ),
         ggiraph_card(
           title = str_glue("Mean no. RAS procedures performed per day, by hospital ({format(latest_month, '%B %Y')})"),
-          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours)
+          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours),
+          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
         )
       )
     ),
@@ -93,7 +94,9 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                                  make_plot_spec_procphase(hospitals, .x)
                     )
                   )
-          )
+          ),
+          card_body("Note: For detail on which prioritisation phase each procedure belongs to, see the supplementary file downloadable from the 'About SRASA' page. \n
+Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
         )
       )
     ),
@@ -110,11 +113,13 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                                make_plot_proc_index(hospitals, .x)
                   )
                 )
-          )
+          ),
+          card_body("Note: The index procedure is the main priority procedure for each specialty's transition to RAS")
         ),
         card(
           card_header(str_glue("Number and proportion of procedure types performed by RAS per month, by specialty ({date_string})")),
           make_table_proc_spec(hospitals),
+          "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'",
           full_screen = T,
           fillable = F
         )
@@ -125,8 +130,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({date_string})"),
-                     make_plot_dq_comp(hospitals)
-                     ),
+                     make_plot_dq_comp(hospitals),
+                     "Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information."),
         card(
           card_header(str_glue("Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({date_string})")),
           do.call(navset_pill,
@@ -136,7 +141,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                                make_plot_dq_compspec(hospitals, .x)
                   )
                 )
-          )
+          ),
+          card_body("Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
         )
       )
     ),
