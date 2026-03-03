@@ -35,7 +35,8 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     guides(
       fill = guide_legend(nrow = ceiling(length(unique(chart_data$hospital_name_grp))/2)) 
     ) +
-    theme_phs_ylines()
+    theme_phs_ylines() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
   return(util_procsmth_plot)
 }
