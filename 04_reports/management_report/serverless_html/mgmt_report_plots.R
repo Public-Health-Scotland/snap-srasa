@@ -36,7 +36,8 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
       fill = guide_legend(nrow = ceiling(length(unique(chart_data$hospital_name_grp))/2)) 
     ) +
     theme_phs_ylines() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
   return(util_procsmth_plot)
 }
@@ -96,7 +97,8 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
       date_labels = "%b %Y"
     ) +
     theme_phs_ylines() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
     facet_wrap(~hospital_name_grp)
   
   return(spec_procsmth_plot)
