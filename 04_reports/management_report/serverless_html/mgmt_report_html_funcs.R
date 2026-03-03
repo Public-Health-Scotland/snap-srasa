@@ -34,7 +34,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Thoracic" = "#F46A25",
                     "Urology" = "#A285D1",
                     "Gastrointestinal" = "#3E8ECC",
-                    "Hepatobiliary" = "#3F085C",
+                    "Hepatobiliary" = "#94AABD",
                     "General surgery (other)" = "#b1b1b1")
   
   ##### html
