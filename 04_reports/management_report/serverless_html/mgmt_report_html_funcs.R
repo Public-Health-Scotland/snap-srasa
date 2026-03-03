@@ -84,16 +84,16 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
           title = str_glue("Total utilisation of surgical robots per surgical specialty, by hospital ({date_string})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
-        do.call(navset_card_tab,
-                args = map(
-                  sort(unique(spec_procsmth$main_op_specialty)),
-                  ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "Number of procedures performed by RAS per month by procedure phase, by specialty ({date_string})",
-                                 spec = .x),
-                               make_plot_spec_procphase(hospitals, .x)
+        card(
+          card_header(str_glue("Number of procedures performed by RAS per month by procedure phase, by specialty ({date_string})")),
+          do.call(navset_pill,
+                  args = map(
+                    sort(unique(spec_procsmth$main_op_specialty)),
+                    ~ggiraph_nav(capitalise_first(.x),
+                                 make_plot_spec_procphase(hospitals, .x)
+                    )
                   )
-                )
+          )
         )
       )
     ),
@@ -101,16 +101,16 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       "By procedure",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        do.call(navset_card_tab,
+        card(
+          card_header(str_glue("Proportion of each specialty's index procedure performed by RAS, by specialty ({date_string})")),
+          do.call(navset_pill,
                 args = map(
                   sort(unique(proc_index$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "Proportion of each specialty's index procedure performed by RAS, by specialty ({date_string})",
-                                 spec = .x),
                                make_plot_proc_index(hospitals, .x)
                   )
                 )
+          )
         ),
         card(
           card_header(str_glue("Number and proportion of procedure types performed by RAS per month, by specialty ({date_string})")),
@@ -127,16 +127,16 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         ggiraph_card(str_glue("Comparison of total RAS procedure numbers recorded by SMR01 and Intuitive, by hospital ({date_string})"),
                      make_plot_dq_comp(hospitals)
                      ),
-        do.call(navset_card_tab,
+        card(
+          card_header(str_glue("Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({date_string})")),
+          do.call(navset_pill,
                 args = map(
                   sort(unique(dq_compspec$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "Specialty-level comparison of RAS procedure numbers recorded by SMR01 and Intuitive, by specialty ({date_string})",
-                                 spec = .x),
                                make_plot_dq_compspec(hospitals, .x)
                   )
                 )
+          )
         )
       )
     ),
@@ -168,25 +168,26 @@ ggiraph_default <- function(plot){
          )
 }
 
-ggiraph_card <- function(title, plot){
+ggiraph_card <- function(title, plot, ...){
   card(
     fill = FALSE,
     card_header(title),
     card_body(
       fillable=FALSE,
       ggiraph_default(plot)
-    )
+    ),
+    card_body(...)
   )
 }
 
-ggiraph_nav <- function(tab_name, title, plot){
+ggiraph_nav <- function(tab_name, plot, ...){
   nav_panel(
     tab_name,
-    card_title(title),
     card_body(
       fillable=FALSE,
       ggiraph_default(plot)
-    )
+    ),
+    card_body(...)
   )
 }
 
