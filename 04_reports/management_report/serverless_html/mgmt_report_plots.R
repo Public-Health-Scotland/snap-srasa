@@ -242,6 +242,7 @@ make_table_proc_spec <- function(hospitals){
       Procedure = main_op_type,
       `Number of procedures` = n,
       `% within specialty` = prop) %>%
+    arrange(Month, Hospital, Specialty) %>%
     datatable(extensions = c('Select', 'SearchPanes'),
               selection = 'none',
               rownames = FALSE,
