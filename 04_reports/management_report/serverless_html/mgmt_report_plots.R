@@ -78,7 +78,7 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
   spec_procsmth_plot <- ggplot(data = chart_data, 
                                aes(x = op_mth, y = n, fill = main_op_specialty,
                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                    "\n Surgical Specialty; ", main_op_specialty,
+                                                    "\n Surgical Specialty: ", main_op_specialty,
                                                     "\n No. RAS procedures: ", n,
                                                     "\n Month: ", op_mth),
                                    data_id = op_mth)) +
@@ -281,7 +281,7 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
   dq_comp_plot <- ggplot(chart_data, 
                          aes(x = op_mth, y = n_procs, fill = dataset,
                              tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                              "\n Data source; ", dataset,
+                                              "\n Data source: ", dataset,
                                               "\n No. RAS procedures recorded: ", n_procs,
                                               "\n Month: ", op_mth),
                              data_id = dataset)) +
@@ -326,7 +326,7 @@ make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialt
 dq_compspec_plot <- ggplot(chart_data, 
                            aes(x = op_mth, y = n_procs, fill = dataset, 
                                tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                "\n Data source; ", dataset,
+                                                "\n Data source: ", dataset,
                                                 "\n No. RAS procedures recorded: ", n_procs,
                                                 "\n Month: ", op_mth),
                                data_id = dataset)) +
