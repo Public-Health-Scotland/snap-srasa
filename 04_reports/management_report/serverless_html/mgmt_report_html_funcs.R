@@ -247,7 +247,7 @@ batch_reports <- function(health_boards, date_from, date_to, output_dir) {
                                           str_to_snake(
                                             paste0(.x,
                                                    format(date_from, "%b%y"),
-                                                   format(date_to, "%b%y")
+                                                   format(date_to %m-% months(1), "%b%y")
                                                    )
                                           ),
                                           ".html"
