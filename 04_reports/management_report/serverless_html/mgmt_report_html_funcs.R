@@ -26,21 +26,16 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   date_string <- paste0(format(start_date, "%B %Y"), " - ", format(latest_month, "%B %Y"))
   
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
-    setNames(hospitals)
+    setNames(str_replace(hospitals, "'", "’"))
   
   spec_colours <- c("Colorectal" = "#12436D",
                     "ENT" = "#28A197",
-                    "Gynaecology" = "#801650",
+                    "Gynaecology" = "#ae1e6d",
                     "Thoracic" = "#F46A25",
                     "Urology" = "#A285D1",
-                    "Gastroenterology" = "#3E8ECC",
+                    "Gastrointestinal" = "#3E8ECC",
                     "Hepatobiliary" = "#3F085C",
-                    "General surgery (other)" = "#3D3D3D",
-                    "General surgery - unlisted" = "#3D3D3D",
-                    "ENT - unlisted" = "#3D3D3D",
-                    "Thoracic - unlisted" = "#3D3D3D",
-                    "Urology - unlisted" = "#3D3D3D",
-                    "Other specialty - unlisted" = "#3D3D3D")
+                    "General surgery (other)" = "#b1b1b1")
   
   ##### html
   report_html <- page_navbar(
