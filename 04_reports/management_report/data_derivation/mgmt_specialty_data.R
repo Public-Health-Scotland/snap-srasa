@@ -54,9 +54,7 @@ ras_cand_data <- ras_cand_data %>% #some aberrant coding liekly due to transfers
 # Simplify specialty categories for these graphs
 ras_cand_data <- ras_cand_data %>% 
   mutate(main_op_specialty = str_remove(main_op_specialty, #collapse unlisted into main specialty
-                                        " - unlisted"),
-         main_op_specialty = replace_when(main_op_specialty, #relabel general to highlight its a fall-back category
-                                          main_op_specialty == "General surgery" ~ "General surgery (other)"))
+                                        " - unlisted"))
 
 ##### Total monthly no. ras procs by specialty & location ----------------------
 spec_procsmth <- ras_cand_data %>%

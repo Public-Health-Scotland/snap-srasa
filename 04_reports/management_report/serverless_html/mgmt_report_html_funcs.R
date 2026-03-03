@@ -35,7 +35,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Urology" = "#A285D1",
                     "Gastrointestinal" = "#3E8ECC",
                     "Hepatobiliary" = "#94AABD",
-                    "General surgery (other)" = "#b1b1b1")
+                    "General surgery" = "#b1b1b1")
   
   ##### html
   report_html <- page_navbar(

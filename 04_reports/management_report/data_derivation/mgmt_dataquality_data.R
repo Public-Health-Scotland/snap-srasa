@@ -19,7 +19,6 @@ intuitive_comp <- intuitive_data %>%
   mutate(srasa_specialty = str_remove(srasa_specialty, #collapse unlisted into main specialty
                                         " - unlisted"),
          srasa_specialty = replace_values(srasa_specialty,
-                                          "General surgery" ~ "General surgery (other)",
                                           "Gynecology" ~ "Gynaecology",
                                           NA ~ "Unspecified"
                                           )) %>%

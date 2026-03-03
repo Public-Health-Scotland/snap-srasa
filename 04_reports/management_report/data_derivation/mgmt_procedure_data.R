@@ -52,9 +52,7 @@ ras_proc_data <- ras_proc_data %>% #some aberrant coding liekly due to transfers
 
 ras_proc_data <- ras_proc_data %>% 
   mutate(main_op_specialty = str_remove(main_op_specialty, #collapse unlisted into main specialty
-                                        " - unlisted"),
-         main_op_specialty = replace_when(main_op_specialty, #relabel general to highlight its a fall-back category
-                                          main_op_specialty == "General surgery" ~ "General surgery (other)"))
+                                        " - unlisted"))
 
 
 ### Index proc, % ras vs non-ras -----------------------------------------------
