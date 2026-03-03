@@ -12,7 +12,7 @@ theme_phs_ylines <- function(){
 make_plot_util_procsmth <- function(hospitals, hosp_colours){
   chart_data <- util_procsmth %>% 
     filter(hospital_name_grp %in% hospitals) %>% 
-    mutate(op_mth = format(op_mth, "%Y-%m"),
+    mutate(op_mth = as.Date(op_mth),
            hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
   util_procsmth_plot <- ggplot(data = chart_data, 
@@ -25,13 +25,19 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     labs(x = "Month", 
          y = "Number of cases", 
          fill = NULL,
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = hosp_colours) +
+    scale_x_date(
+      date_breaks = "1 month",
+      date_labels = "%b %Y"
+    ) +
     guides(
       fill = guide_legend(nrow = ceiling(length(unique(chart_data$hospital_name_grp))/2)) 
     ) +
-    theme_phs_ylines()
+    theme_phs_ylines() +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
   return(util_procsmth_plot)
 }
@@ -40,7 +46,8 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
   chart_data <- util_procsday %>% 
     filter(op_mth == month,
            hospital_name_grp %in% hospitals) %>% 
-    mutate(op_mth = format(op_mth, "%Y-%m"))
+    mutate(op_mth = format(op_mth, "%Y-%m"),
+           hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
   util_procsday_plot <- ggplot(data = chart_data, 
                                aes(x = dow, y = mean_procs_pd, fill = hospital_name_grp,
@@ -52,7 +59,7 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
     geom_hline_interactive(yintercept = 1, linetype = "dashed", color = "grey30")+
     labs(x = "Day of the Week", 
          y = "Monthly mean no. RAS procedures", 
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = hosp_colours)+
     facet_wrap(.~ hospital_name_grp) +
@@ -67,27 +74,32 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
 
 make_plot_spec_procsmth <- function(hospitals, spec_colours){
   chart_data <- spec_procsmth %>% 
-    filter(ras_proc == "RAS") %>% 
-    mutate(op_mth = format(op_mth, "%Y-%m")) %>% 
+    filter(ras_proc == "RAS")  %>%
+    mutate(op_mth = as.Date(op_mth)) %>% 
     filter(hospital_name_grp %in% hospitals) 
   
   spec_procsmth_plot <- ggplot(data = chart_data, 
                                aes(x = op_mth, y = n, fill = main_op_specialty,
                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                    "\n Surgical Specialty; ", main_op_specialty,
+                                                    "\n Surgical Specialty: ", main_op_specialty,
                                                     "\n No. RAS procedures: ", n,
                                                     "\n Month: ", op_mth),
                                    data_id = op_mth)) +
-    geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
+    geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE)+
     labs(x = "Month", 
          y = "Number of cases", 
          fill = "Surgical Specialty",
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          #subtitle = paste0("Patients receiving RAS only")
          )+ 
     scale_fill_manual(values = spec_colours) +
+    scale_x_date(
+      date_breaks = "1 month",
+      date_labels = "%b %Y"
+    ) +
     theme_phs_ylines() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    theme(legend.position = "bottom",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
     facet_wrap(~hospital_name_grp)
   
   return(spec_procsmth_plot)
@@ -122,7 +134,7 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
     labs(x = "Month", 
          y = "Total RAS procedures", 
          fill = "Procedure phase",
-         caption = "Data from SMR01",
+         caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = c("Non-priority" = "#b1b1b1","Phase 1" = "#3F085C", "Phase 2" = "#3E8ECC")) + 
     scale_y_continuous(
@@ -158,16 +170,18 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
              hospital_name_grp = hospitals,
              fill = list(n = 0,
                          prop = 100,
-                         ras_proc = "No procedures"))
+                         ras_proc = "No procedures")) %>%
+    mutate(op_mth = as.Date(op_mth))
   
   proc_index_plot <- ggplot(chart_data, 
                             aes(x = op_mth, y = prop, fill = ras_proc, 
                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                 "\n % phase 1 and 2 procedures; ", prop, "%", # does this tooltip make sense? aren't we looking at one procedure?
-                                                 "\n No. phase 1 and 2 procedures: ", n,
+                                                 "\n ", ras_proc,
+                                                 "\n % of procedures: ", prop, "%",
+                                                 "\n No. of procedures: ", n,
                                                  "\n Month: ", op_mth),
                                 data_id = op_mth)) + 
-    geom_bar_interactive(stat = "identity") +
+    geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE) +
     facet_wrap(~ hospital_name_grp)+ 
     #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
     labs(x = "Month", 
@@ -176,7 +190,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
          caption = "Data from SMR01, all surgical approaches to index procedure",
          subtitle = paste0("Index procedure: ", proc))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
-    scale_x_datetime(
+    scale_x_date(
       date_breaks = "1 month",
       date_labels = "%b %Y"
     ) +
@@ -187,36 +201,40 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
   return(proc_index_plot)
 }
 
-make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty tabs
-  #"Procedures carried out in each specialty as a proportion of total procedures ({start_date} - {latest_date})",
-  
-  chart_data <- proc_spec %>% 
-    filter(hospital_name_grp %in% hospitals &
-             main_op_specialty == specialty)
-  
-  proc_spec_plot <-  ggplot(chart_data,
-                            aes(x = op_mth, y = prop, fill = main_op_type, 
-                                tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                 "\n % procedure type performed by RAS; ", prop, "%",
-                                                 "\n No. procedure type conducted: ", n,
-                                                 "\n Month: ", op_mth),
-                                data_id = main_op_type)) +
-    geom_bar(stat = "identity") +
-    facet_wrap(.~hospital_name_grp) +
-    labs(x = "Month", 
-         y = "% procedure type performed by RAS",
-         fill = "Procedure type",
-         caption = "Data from SMR01")+ 
-    scale_fill_manual(values = c("#12436D","#28A197", "#801650", "#F46A25",
-                                 "#3E8ECC", "#3F085C", "#3D3D3D","#94AABD", 
-                                 "#B4DEDB", "#CCA2B9", "#FBC3A8", "#A8CCE8", 
-                                 "#A285D1", "#A8A8A8"))+
-    theme_phs_ylines() +
-    theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, hjust = 1))
-  
-  return(proc_spec_plot)
-}
+# make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty tabs
+#   #"Procedures carried out in each specialty as a proportion of total procedures ({start_date} - {latest_date})",
+#   
+#   chart_data <- proc_spec %>% 
+#     filter(hospital_name_grp %in% hospitals &
+#              main_op_specialty == specialty)
+#   
+#   proc_spec_plot <-  ggplot(chart_data,
+#                             aes(x = op_mth, y = prop, fill = main_op_type, 
+#                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
+#                                                  "\n % procedure type performed by RAS; ", prop, "%",
+#                                                  "\n No. procedure type conducted: ", n,
+#                                                  "\n Month: ", op_mth),
+#                                 data_id = main_op_type)) +
+#     geom_bar(stat = "identity") +
+#     facet_wrap(.~hospital_name_grp) +
+#     labs(x = "Month", 
+#          y = "% procedure type performed by RAS",
+#          fill = "Procedure type",
+#          caption = "Data from SMR01, all candidate procedures")+ 
+#     scale_fill_manual(values = c("#12436D","#28A197", "#801650", "#F46A25",
+#                                  "#3E8ECC", "#3F085C", "#3D3D3D","#94AABD", 
+#                                  "#B4DEDB", "#CCA2B9", "#FBC3A8", "#A8CCE8", 
+#                                  "#A285D1", "#A8A8A8"))+
+#     scale_x_datetime(
+#       date_breaks = "1 month",
+#       date_labels = "%b %Y"
+#     ) +
+#     theme_phs_ylines() +
+#     theme(legend.position = "bottom",
+#           axis.text.x = element_text(angle = 45, hjust = 1))
+#   
+#   return(proc_spec_plot)
+# }
 
 make_table_proc_spec <- function(hospitals){
   proc_spec %>% 
@@ -228,6 +246,7 @@ make_table_proc_spec <- function(hospitals){
       Procedure = main_op_type,
       `Number of procedures` = n,
       `% within specialty` = prop) %>%
+    arrange(Month, Hospital, Specialty) %>%
     datatable(extensions = c('Select', 'SearchPanes'),
               selection = 'none',
               rownames = FALSE,
@@ -260,23 +279,24 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
   chart_data <- dq_comp %>% 
     rename(SMR01 = n, Intuitive = int_n) %>% 
     pivot_longer(SMR01:Intuitive, names_to = "dataset", values_to = "n_procs") %>% 
-    filter(hospital_name_grp %in% hospitals)
+    filter(hospital_name_grp %in% hospitals) %>%
+    mutate(op_mth = as.Date(op_mth))
   
   dq_comp_plot <- ggplot(chart_data, 
                          aes(x = op_mth, y = n_procs, fill = dataset,
                              tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                              "\n Data source; ", dataset,
+                                              "\n Data source: ", dataset,
                                               "\n No. RAS procedures recorded: ", n_procs,
                                               "\n Month: ", op_mth),
                              data_id = dataset)) +
-    geom_bar_interactive(stat = "identity", position = "dodge", hover_nearest = TRUE) +
+    geom_bar_interactive(stat = "identity", position = "dodge", width = 20, hover_nearest = TRUE) +
     labs(x = "Month", 
          y = "No. recorded RAS procedures", 
          fill = "Data source",
-         caption = "Data from SMR01 and Intuitive",
+         caption = "Data from SMR01 and Intuitive, RAS procedures only",
          subtitle = paste0())+ 
     scale_fill_manual(values = c("#3E8ECC","#3F085C")) +
-    scale_x_datetime(
+    scale_x_date(
       date_breaks = "1 month",
       date_labels = "%b %Y"
     ) +
@@ -310,7 +330,7 @@ make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialt
 dq_compspec_plot <- ggplot(chart_data, 
                            aes(x = op_mth, y = n_procs, fill = dataset, 
                                tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                "\n Data source; ", dataset,
+                                                "\n Data source: ", dataset,
                                                 "\n No. RAS procedures recorded: ", n_procs,
                                                 "\n Month: ", op_mth),
                                data_id = dataset)) +
@@ -318,7 +338,7 @@ dq_compspec_plot <- ggplot(chart_data,
   labs(x = "Month", 
        y = "No. recorded RAS procedures", 
        fill = "Data source",
-       caption = "Data from SMR01 and Intuitive",
+       caption = "Data from SMR01 and Intuitive, RAS procedures only",
        subtitle = paste0())+ 
   scale_fill_manual(values = c("#3E8ECC","#3F085C")) + 
   scale_y_continuous(

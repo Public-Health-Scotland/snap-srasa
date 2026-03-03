@@ -26,21 +26,16 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   date_string <- paste0(format(start_date, "%B %Y"), " - ", format(latest_month, "%B %Y"))
   
   hosp_colours <- phs_colour_values[1:length(hospitals)] |>
-    setNames(hospitals)
+    setNames(str_replace(hospitals, "'", "’"))
   
   spec_colours <- c("Colorectal" = "#12436D",
                     "ENT" = "#28A197",
-                    "Gynaecology" = "#801650",
+                    "Gynaecology" = "#ae1e6d",
                     "Thoracic" = "#F46A25",
                     "Urology" = "#A285D1",
-                    "Gastroenterology" = "#3E8ECC",
-                    "Hepatobiliary" = "#3F085C",
-                    "General surgery (other)" = "#3D3D3D",
-                    "General surgery - unlisted" = "#3D3D3D",
-                    "ENT - unlisted" = "#3D3D3D",
-                    "Thoracic - unlisted" = "#3D3D3D",
-                    "Urology - unlisted" = "#3D3D3D",
-                    "Other specialty - unlisted" = "#3D3D3D")
+                    "Gastrointestinal" = "#3E8ECC",
+                    "Hepatobiliary" = "#94AABD",
+                    "General surgery" = "#b1b1b1")
   
   ##### html
   report_html <- page_navbar(
@@ -77,7 +72,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         ),
         ggiraph_card(
           title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest month ({format(latest_month, '%B %Y')})"),
-          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours)
+          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours),
+          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
         )
       )
     ),
@@ -89,16 +85,20 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
           title = str_glue("2.1 - Number of procedures performed by RAS monthly under each specialty ({date_string})"),
           plot = make_plot_spec_procsmth(hospitals, spec_colours)
         ),
-        do.call(navset_card_tab,
-                args = map(
-                  sort(unique(spec_procsmth$main_op_specialty)),
-                  ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "2.2 - Number of procedures performed by RAS monthly according to procedure prioritisation phase, by specialty ({date_string})",
-                                 spec = .x),
-                               make_plot_spec_procphase(hospitals, .x)
+        card(
+          card_header(str_glue("2.2 - Number of procedures performed by RAS monthly according to procedure prioritisation phase, by specialty ({date_string})")),
+          do.call(navset_pill,
+                  args = map(
+                    sort(unique(spec_procsmth$main_op_specialty)),
+                    ~ggiraph_nav(capitalise_first(.x),
+                                 make_plot_spec_procphase(hospitals, .x)
+                    )
                   )
-                )
+          ),
+          card_body(
+            "Note: For detail on which prioritisation phase each procedure belongs to, see the supplementary file downloadable from the 'About SRASA' page.",
+            br(),
+            "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
         )
       )
     ),
@@ -106,20 +106,22 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       "3. By procedure",
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
-        do.call(navset_card_tab,
+        card(
+          card_header(str_glue("3.1 - Proportion of the index procedure performed by RAS monthly, by specialty ({date_string})")),
+          do.call(navset_pill,
                 args = map(
                   sort(unique(proc_index$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "3.1 - Proportion of the index procedure performed by RAS monthly, by specialty ({date_string})",
-                                 spec = .x),
                                make_plot_proc_index(hospitals, .x)
                   )
                 )
+          ),
+          card_body("Note: The index procedure is the main priority procedure for each specialty's transition to RAS")
         ),
         card(
           card_header(str_glue("3.2 - Table of procedures performed by RAS monthly, with proportion of specialty utilisation attributable to each procedure type ({date_string})")),
           make_table_proc_spec(hospitals),
+          "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'",
           full_screen = T,
           fillable = F
         )
@@ -130,18 +132,19 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
       layout_columns(
         col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
         ggiraph_card(str_glue("4.1 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly ({date_string})"),
-                     make_plot_dq_comp(hospitals)
-                     ),
-        do.call(navset_card_tab,
+                     make_plot_dq_comp(hospitals),
+                     "Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information."),
+        card(
+          card_header(str_glue("4.2 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly, by specialty ({date_string})")),
+          do.call(navset_pill,
                 args = map(
                   sort(unique(dq_compspec$main_op_specialty)),
                   ~ggiraph_nav(capitalise_first(.x),
-                               title = str_glue(
-                                 "4.2 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly, by specialty ({date_string})",
-                                 spec = .x),
                                make_plot_dq_compspec(hospitals, .x)
                   )
                 )
+          ),
+          card_body("Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
         )
       )
     ),
@@ -173,25 +176,26 @@ ggiraph_default <- function(plot){
          )
 }
 
-ggiraph_card <- function(title, plot){
+ggiraph_card <- function(title, plot, ...){
   card(
     fill = FALSE,
     card_header(title),
     card_body(
       fillable=FALSE,
       ggiraph_default(plot)
-    )
+    ),
+    card_body(...)
   )
 }
 
-ggiraph_nav <- function(tab_name, title, plot){
+ggiraph_nav <- function(tab_name, plot, ...){
   nav_panel(
     tab_name,
-    card_title(title),
     card_body(
       fillable=FALSE,
       ggiraph_default(plot)
-    )
+    ),
+    card_body(...)
   )
 }
 
@@ -252,7 +256,7 @@ batch_reports <- function(health_boards, date_from, date_to, output_dir) {
                                           str_to_snake(
                                             paste0(.x,
                                                    format(date_from, "%b%y"),
-                                                   format(date_to, "%b%y")
+                                                   format(date_to %m-% months(1), "%b%y")
                                                    )
                                           ),
                                           ".html"
