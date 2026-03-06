@@ -56,7 +56,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
         card(card_header("About this report"),
              includeHTML(paste0(script_dir, "/resources/about.html"))),
         card(card_header("Supplementary information"),
-             span("The classification of procedures into 'phase 1', 'phase 2' and 'non-priority' can be accessed here:"),
+             span("The classification of procedures into 'phase 1', 'phase 2' and 'other' can be accessed here:"),
              downloadthis::download_file(paste0(script_dir, "/resources/SRASA procedure codes and phasing.xlsx"),
                                          button_label = "Priority procedure classification table",
                                          self_contained = TRUE))

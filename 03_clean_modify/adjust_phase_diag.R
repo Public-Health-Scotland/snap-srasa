@@ -69,11 +69,11 @@ adjust_phase_diag <- function(df){
                                         phasing_diagnostics == "cancer_ent" &
                                           main_op_code %in% diag_dependent_ent ~ "phase1", #changed lookup to make ent phase 2 by default, so now if dig = ent cancer then switch it to phase 1
                                         phasing_diagnostics == "cancer_ovarian" &
-                                          main_op_code %in% diag_dependent_gynae ~ "non-priority",
+                                          main_op_code %in% diag_dependent_gynae ~ "other",
                                         phasing_diagnostics == "cancer_endometrial" &
                                           main_op_code %in% diag_dependent_gynae ~ "phase1", #hysterectomy default is phase2 for any cancer (except ovarian) and benign cases, if endometrial cancer make it phase 1
                                         phasing_diagnostics == "obesity_gastro" &
-                                          main_op_code %in% diag_dependent_gastro ~ "non-priority")) #if gastro and obesity = non-priority, otherwise default is phase 2
+                                          main_op_code %in% diag_dependent_gastro ~ "other")) #if gastro and obesity = non-priority, otherwise default is phase 2
  
   return(diag_adj_data)
   
