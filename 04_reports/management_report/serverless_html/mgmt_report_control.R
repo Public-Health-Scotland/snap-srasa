@@ -72,5 +72,5 @@ batch_reports(
   health_boards,
   date_from,
   date_to,
-  paste0(output_dir, format(date_to, "%B %y"))
+  paste0(output_dir, format(Sys.Date(), "%B %y"))
 )
