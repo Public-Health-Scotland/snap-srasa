@@ -141,7 +141,7 @@ ras_clean_data <- ras_clean_data %>%
                                    !is.na(op2_opcs_desc) ~ op2_phase,
                                    !is.na(op3_opcs_desc) ~ op3_phase,
                                    !is.na(op4_opcs_desc) ~ op4_phase,
-                                   !is.na(unlisted_ras_proc) ~ "non-priority",
+                                   !is.na(unlisted_ras_proc) ~ "other",
                                    .default = NA),
          main_op_date = case_when(!is.na(op1_opcs_desc) ~ op1_date,
                                   !is.na(op2_opcs_desc) ~ op2_date,

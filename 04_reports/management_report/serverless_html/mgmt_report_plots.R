@@ -115,12 +115,12 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
            hospital_name_grp %in% hospitals,
            main_op_specialty == specialty) %>%
     complete(op_mth = all_months,
-             main_op_phase = c("phase1", "phase2", "non-priority"),
+             main_op_phase = c("phase1", "phase2", "other"),
              hospital_name_grp = hospitals,
              fill = list(n = 0)) %>% 
     mutate(main_op_phase = factor(main_op_phase, 
-                                  levels = c("phase1", "phase2", "non-priority"),
-                                  labels = c("Phase 1", "Phase 2", "Non-priority")),
+                                  levels = c("phase1", "phase2", "other"),
+                                  labels = c("Phase 1", "Phase 2", "other")),
            op_mth = as_date(op_mth))
   
   spec_procphase_plot <- ggplot(chart_data, 
@@ -136,7 +136,7 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
          fill = "Procedure phase",
          caption = "Data from SMR01, RAS procedures only",
          subtitle = paste0())+ 
-    scale_fill_manual(values = c("Non-priority" = "#b1b1b1","Phase 1" = "#3F085C", "Phase 2" = "#3E8ECC")) + 
+    scale_fill_manual(values = c("Other" = "#b1b1b1","Phase 1" = "#3F085C", "Phase 2" = "#3E8ECC")) + 
     scale_y_continuous(
       breaks = scales::breaks_width(5),
     ) +
