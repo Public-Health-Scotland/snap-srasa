@@ -24,9 +24,9 @@ append_date_vars <- function(df){
            last_discharge_date = max(discharge_date),
            cis_outcome = case_when(any(discharge == 2) ~ 'dead',
                                    .default = 'alive'), #get admission and discharge date for each stay plus outcome from cis
-           op_mth = floor_date(op1_date, "month"), 
+           op_mth = floor_date(main_op_date, "month"), 
            op_year = format(as.Date(op_mth, format="%Y-%m-%d"),"%Y"),
-           op_qt = lubridate::quarter(as.Date(op1_date, format="%Y-%m-%d"), with_year = T),
+           op_qt = lubridate::quarter(as.Date(main_op_date, format="%Y-%m-%d"), with_year = T),
            .after = discharge_date) %>%
     ungroup() %>% 
     
