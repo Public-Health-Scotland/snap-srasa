@@ -46,9 +46,9 @@ ras_clean_data <- df %>%
 approach_vec <- c("op1_approach", "op2_approach", "op3_approach", "op4_approach") #label ras/minimally invasive/NoS instead of codes
 all_procs_list <- read_csv(paste0(lookup_dir, "all_ras_procs.csv")) %>%  # Lookup for candidate procedures
   select(-code3)
-spec_lookup <- read_csv(paste0(lookup_dir, "smr01_specialty_lookup.csv")) %>% #lookup for smr01 specialty - bespoke column to provide desired specialty categories
-  select(-Value, -specialty_desc) %>% 
-  rename(unlisted_ras_proc_spec = specialty_for_unlisted)
+# spec_lookup <- read_csv(paste0(lookup_dir, "smr01_specialty_lookup.csv")) %>% #lookup for smr01 specialty - bespoke column to provide desired specialty categories
+#   select(-Value, -specialty_desc) %>% 
+#   rename(unlisted_ras_proc_spec = specialty_for_unlisted)
 
 ras_clean_data <- ras_clean_data %>% 
   mutate(across(all_of(approach_vec), ~ case_when(. %in% robotics_list ~ "RAS",
@@ -94,12 +94,9 @@ ras_clean_data <- ras_clean_data %>%
          unlisted_ras_proc = case_when(op1_approach == "RAS" & no_match == TRUE ~ op1a,
                                        op2_approach == "RAS" & no_match == TRUE ~ op2a,
                                        op3_approach == "RAS" & no_match == TRUE ~ op3a,
-                                       op4_approach == "RAS" & no_match == TRUE ~ op4a),#use first letter of proc code to narrow this down a bit
-         unlisted_spec = case_when(!is.na(unlisted_ras_proc) ~ specialty,
-                                   .default = NA)) %>% 
+                                       op4_approach == "RAS" & no_match == TRUE ~ op4a)) %>% 
   select(-no_match) %>% #remove obsolete column
-  left_join(spec_lookup, by = join_by(unlisted_spec == Code)) %>% 
-  mutate(unlisted_opcs_type = case_when(is.na(unlisted_ras_proc) ~ NA,
+  mutate(unlisted_opcs_type = case_when(is.na(unlisted_ras_proc) ~ NA, #use fits letter of OPCS code (corresponds to anatomical region) to assign ballpark specialty for proc type and spec
                                         str_starts(unlisted_ras_proc, "H") ~ "Unlisted - colorectal",
                                         str_starts(unlisted_ras_proc, "M") ~ "Unlisted - urology",
                                         str_starts(unlisted_ras_proc, "Q") ~ "Unlisted - gynaecology",
@@ -110,7 +107,19 @@ ras_clean_data <- ras_clean_data %>%
                                         unlisted_ras_proc_spec == "ENT - unlisted" & 
                                           str_starts(unlisted_ras_proc, "E") ~ "Unlisted - ENT",
                                         str_starts(unlisted_ras_proc, "F") ~ "Unlisted - ENT",
-                                        .default = "Unlisted - other")) %>% 
+                                        .default = "Unlisted - other"),
+         unlisted_spec = case_when(is.na(unlisted_ras_proc) ~ NA,
+                                  str_starts(unlisted_ras_proc, "H") ~ "Colorectal",
+                                  str_starts(unlisted_ras_proc, "M") ~ "Urology",
+                                  str_starts(unlisted_ras_proc, "Q") ~ "Gynaecology",
+                                  str_starts(unlisted_ras_proc, "J") ~ "Hepatobiliary",
+                                  str_starts(unlisted_ras_proc, "G") ~ "Gastrointestinal",
+                                  (specialty == "AQ" | specialty == "C42") & 
+                                    str_starts(unlisted_ras_proc, "E") ~ "Thoracic",
+                                  specialty == "C5" & 
+                                    str_starts(unlisted_ras_proc, "E") ~ "ENT",
+                                  str_starts(unlisted_ras_proc, "F") ~ "ENT",
+                                  .default = "Unlisted")) %>% #unlisted_spec = case_when(!is.na(unlisted_ras_proc) ~ specialty,.default = NA) #left_join(spec_lookup, by = join_by(unlisted_spec == Code)) previously used smr spcialty for this but updated to use opcs code first letter
   
   #then make 1 column with 1st candidate proc that appears - main_ras_proc, plus proc type, specialty, phase etc - pull the unlisted procs into that so all are in one place. 
   mutate(main_op_code = case_when(!is.na(op1_opcs_desc) ~ op1a,
@@ -123,7 +132,7 @@ ras_clean_data <- ras_clean_data %>%
                                   !is.na(op2_opcs_desc) ~ op2_opcs_desc,
                                   !is.na(op3_opcs_desc) ~ op3_opcs_desc,
                                   !is.na(op4_opcs_desc) ~ op4_opcs_desc,
-                                  !is.na(unlisted_ras_proc) ~ "unlisted procedure",
+                                  !is.na(unlisted_ras_proc) ~ "Unlisted procedure",
                                   .default = NA),
          main_op_type = case_when(!is.na(op1_opcs_desc) ~ op1_proc_type,
                                   !is.na(op2_opcs_desc) ~ op2_proc_type,
@@ -135,7 +144,7 @@ ras_clean_data <- ras_clean_data %>%
                                        !is.na(op2_opcs_desc) ~ op2_specialty,
                                        !is.na(op3_opcs_desc) ~ op3_specialty,
                                        !is.na(op4_opcs_desc) ~ op4_specialty,
-                                       !is.na(unlisted_ras_proc) ~ unlisted_ras_proc_spec,
+                                       !is.na(unlisted_ras_proc) ~ unlisted_spec,
                                        .default = NA),
          main_op_phase = case_when(!is.na(op1_opcs_desc) ~ op1_phase,
                                    !is.na(op2_opcs_desc) ~ op2_phase,
