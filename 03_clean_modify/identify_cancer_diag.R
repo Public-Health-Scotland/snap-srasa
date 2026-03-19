@@ -43,7 +43,7 @@ identify_cancer_diag <- function(df){
 
 ### Identify cancer diagnoses specific to the specialty of procedure -----------
   
-  #read in lists of codes
+  #read in lists of cancer (malignant) codes
   diag_codes_colorectal <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_colorectal.csv")) %>% 
     dplyr::pull(icd10_code)
   diag_codes_ent <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_ent.csv")) %>% 
@@ -59,6 +59,22 @@ identify_cancer_diag <- function(df){
   diag_codes_urology <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_urology.csv")) %>% 
     dplyr::pull(icd10_code)
   
+  #read in lists of non-malignant neoplasm codes, as a neoplasm may be treated as if it were cancer until proven otherwise
+  # nonmal_codes_colorectal <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_colorectal_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_ent <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_ent_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_gastro <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_gastro_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_gynae <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_gynae_nonmal.csv")) %>% 
+  #   filter(cancer_type != "gynae_fibroid") %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_hepatic <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_hepatic_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_thoracic <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_thoracic_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
+  # nonmal_codes_urology <- read.csv(paste0(lookup_dir, "diagnostics/diag_codes_urology_nonmal.csv")) %>% 
+  #   dplyr::pull(icd10_code)
   
   diag_data <- flagged_data %>% 
     mutate(cancer_surgery = case_when(main_op_specialty == "Colorectal" & 
@@ -117,30 +133,6 @@ identify_cancer_diag <- function(df){
                                         diag5 %in% diag_codes_urology |
                                         diag6 %in% diag_codes_urology) ~ "Urological", #any op with specialty 'General surgery' is hernia repair so cancer not relevant
                                    
-                                   main_op_specialty == "ENT - unlisted" &
-                                     (diag1 %in% diag_codes_ent |
-                                        diag2 %in% diag_codes_ent |
-                                        diag3 %in% diag_codes_ent |
-                                        diag4 %in% diag_codes_ent |
-                                        diag5 %in% diag_codes_ent |
-                                        diag6 %in% diag_codes_ent) ~ "ENT",
-                                   
-                                   main_op_specialty == "Thoracic - unlisted" &
-                                     (diag1 %in% diag_codes_thoracic |
-                                        diag2 %in% diag_codes_thoracic |
-                                        diag3 %in% diag_codes_thoracic |
-                                        diag4 %in% diag_codes_thoracic |
-                                        diag5 %in% diag_codes_thoracic |
-                                        diag6 %in% diag_codes_thoracic) ~ "Thoracic",
-                                   
-                                   main_op_specialty == "Urology - unlisted" & 
-                                     (diag1 %in% diag_codes_urology |
-                                        diag2 %in% diag_codes_urology |
-                                        diag3 %in% diag_codes_urology |
-                                        diag4 %in% diag_codes_urology |
-                                        diag5 %in% diag_codes_urology |
-                                        diag6 %in% diag_codes_urology) ~ "Urological",
-                                   
                                    main_op_type == "Unlisted - colorectal" & 
                                      (diag1 %in% diag_codes_colorectal |
                                         diag2 %in% diag_codes_colorectal |
@@ -179,6 +171,14 @@ identify_cancer_diag <- function(df){
            cancer_unidentified = case_when(is.na(cancer_surgery) & cancer_flag == TRUE ~ TRUE,
                                            !is.na(cancer_surgery) & cancer_flag == TRUE ~ FALSE,
                                            .default = NA)) #this works but there are quite a lot of cases (~1.5%) - presumably where secondary has not been coded as such so primary cancer location is not relevant to spec of surgery performed
+  #Need to exclude tonsillectomies unless cancer diagnosis is present
+    #cancer_only_procs = case_when(is.na(cancer_surgery) & 
+  #                                   (main_op_type == "Tonsillectomy" | #create dummy column to flag procedures which should only be included in data if cancer diagnosis is present
+  #                                      main_op_type == "Other operations on tonsil") ~ "remove", #this wasn't working quite right - 30 cases with no cancer_surgery flag were getting dropped
+  #                                 .default = NA)
+  #   filter(is.na(cancer_only_procs)) %>% #remove rows with benign surgeries for procs which should only be included if cancer diagnosis is present
+  #   select(-cancer_only_procs) #remove dummy column
+  # #Could exclude M65.3 unless cancer diagnosis is present?
   
 return(diag_data)
   
