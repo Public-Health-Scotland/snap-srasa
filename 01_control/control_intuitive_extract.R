@@ -16,5 +16,5 @@ list.files("./03_clean_modify/", full.names = TRUE) %>%
 
 ### compile and save intuitive data --------------------------------------------
 compile_intuitive_data() %>% 
-  append_intuitive_data()
+  append_intuitive_data() #need to add some checks for duplicated rows
   
