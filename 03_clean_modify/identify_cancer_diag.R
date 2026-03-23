@@ -170,15 +170,11 @@ identify_cancer_diag <- function(df){
            
            cancer_unidentified = case_when(is.na(cancer_surgery) & cancer_flag == TRUE ~ TRUE,
                                            !is.na(cancer_surgery) & cancer_flag == TRUE ~ FALSE,
-                                           .default = NA)) #this works but there are quite a lot of cases (~1.5%) - presumably where secondary has not been coded as such so primary cancer location is not relevant to spec of surgery performed
-  #Need to exclude tonsillectomies unless cancer diagnosis is present
-    #cancer_only_procs = case_when(is.na(cancer_surgery) & 
-  #                                   (main_op_type == "Tonsillectomy" | #create dummy column to flag procedures which should only be included in data if cancer diagnosis is present
-  #                                      main_op_type == "Other operations on tonsil") ~ "remove", #this wasn't working quite right - 30 cases with no cancer_surgery flag were getting dropped
-  #                                 .default = NA)
-  #   filter(is.na(cancer_only_procs)) %>% #remove rows with benign surgeries for procs which should only be included if cancer diagnosis is present
-  #   select(-cancer_only_procs) #remove dummy column
-  # #Could exclude M65.3 unless cancer diagnosis is present?
+                                           .default = NA)) %>%  #this works but there are quite a lot of cases (~1.5%) - presumably where secondary has not been coded as such so primary cancer location is not relevant to spec of surgery performed
+  #Need to exclude tonsillectomies unless cancer diagnosis is present (in which case it will be phase 2)
+  filter_out(main_op_type %in% c("Tonsillectomy", "Other operations on tonsil") &
+               main_op_phase == "phase2") 
+  # #Could add to this -  exclude M65.3 unless cancer diagnosis is present?
   
 return(diag_data)
   

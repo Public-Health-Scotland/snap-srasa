@@ -102,9 +102,9 @@ ras_clean_data <- ras_clean_data %>%
                                         str_starts(unlisted_ras_proc, "Q") ~ "Unlisted - gynaecology",
                                         str_starts(unlisted_ras_proc, "J") ~ "Unlisted - hepatobiliary",
                                         str_starts(unlisted_ras_proc, "G") ~ "Unlisted - gastrointestinal",
-                                        unlisted_ras_proc_spec == "Thoracic - unlisted" & 
+                                        specialty %in% c("AQ", "C42") & #smr specialty codes for thoracic specialties
                                           str_starts(unlisted_ras_proc, "E") ~ "Unlisted - thoracic",
-                                        unlisted_ras_proc_spec == "ENT - unlisted" & 
+                                        specialty == "C5" & #smr specialty codes for ent specialties
                                           str_starts(unlisted_ras_proc, "E") ~ "Unlisted - ENT",
                                         str_starts(unlisted_ras_proc, "F") ~ "Unlisted - ENT",
                                         .default = "Unlisted - other"),
@@ -114,7 +114,7 @@ ras_clean_data <- ras_clean_data %>%
                                   str_starts(unlisted_ras_proc, "Q") ~ "Gynaecology",
                                   str_starts(unlisted_ras_proc, "J") ~ "Hepatobiliary",
                                   str_starts(unlisted_ras_proc, "G") ~ "Gastrointestinal",
-                                  (specialty == "AQ" | specialty == "C42") & 
+                                  specialty %in% c("AQ", "C42") & 
                                     str_starts(unlisted_ras_proc, "E") ~ "Thoracic",
                                   specialty == "C5" & 
                                     str_starts(unlisted_ras_proc, "E") ~ "ENT",
