@@ -33,11 +33,11 @@ get_int_dwnld_params <- function(){
   
   ARI <- paste0("ARI_", file_sdate, "-", file_edate)
   GRI <- paste0("GRI_", file_sdate, "-", file_edate)
-  GoldenJubilee <- paste0("GJNH_", file_sdate, "-", file_edate)
-  Hairmyres <- paste0("UHH_", file_sdate, "-", file_edate)
-  Ninewells <- paste0("NWD_", file_sdate, "-", file_edate)
+  GJNH <- paste0("GJNH_", file_sdate, "-", file_edate)
+  UHH <- paste0("UHH_", file_sdate, "-", file_edate)
+  NWD <- paste0("NWD_", file_sdate, "-", file_edate)
   QEUH <- paste0("QEUH_", file_sdate, "-", file_edate)
-  Raigmore <- paste0("RHI_", file_sdate, "-", file_edate)
+  RHI <- paste0("RHI_", file_sdate, "-", file_edate)
   RIE <- paste0("RIE_", file_sdate, "-", file_edate)
   SJH <- paste0("SJH_", file_sdate, "-", file_edate)
   UHC <- paste0("UHC_", file_sdate, "-", file_edate)
@@ -48,14 +48,14 @@ get_int_dwnld_params <- function(){
               end_date = end_date,
               ARI = ARI,
               GRI = GRI,
-              GJNH = GJNH,
-              NWD = NWD,
+              GoldenJubilee = GJNH,
+              Hairmyres = UHH,
+              Ninewells = NWD,
               QEUH = QEUH,
-              RHI = RHI,
+              Raigmore = RHI,
               RIE = RIE,
               SJH = SJH,
               UHC = UHC,
-              UHH = UHH,
               VHK = VHK,
               WGH = WGH))
 }
