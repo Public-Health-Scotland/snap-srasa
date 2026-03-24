@@ -41,8 +41,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
                     "Hepatobiliary" = "#94AABD",
                     "General surgery" = "#b1b1b1")
   
-  ##### source report UI
-  source(paste0(script_dir, "mgmt_report_ui.R"))
+  ##### source report UI (within function env)
+  source(paste0(script_dir, "mgmt_report_ui.R"), local = TRUE)
   
   return(report_ui)
 }
