@@ -1,10 +1,26 @@
 ### Setup ----------------------------------------------------------------------
 
+# theme_phs for coord flip
 theme_phs_ylines <- function(){
   list(
     theme_phs(),
     theme(panel.grid.major.y = ggplot2::element_line(color = grDevices::rgb(190 / 255, 190 / 255, 190 / 255)),
           panel.grid.major.x = ggplot2::element_blank())
+  )
+}
+
+# default settings for ggiraph plots
+ggiraph_default <- function(plot){
+  girafe(ggobj = plot,
+         options = list(
+           opts_tooltip(
+             opacity = 0.6,
+             use_fill = TRUE),
+           opts_hover(css = "opacity:0.8", nearest_distance = 10),
+           opts_hover_inv(css = "opacity:0.4")),
+         height_svg = 6,
+         width_svg = 9,
+         fonts = list(sans = "Open Sans")
   )
 }
 
@@ -37,7 +53,8 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     ) +
     theme_phs_ylines() +
     theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+    ggiraph_default()
   
   return(util_procsmth_plot)
 }
@@ -70,7 +87,8 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
     facet_wrap(.~ hospital_name_grp) +
     theme_phs_ylines() +
     theme(legend.position = 'none',
-          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+    ggiraph_default()
   
   return(util_procsday_plot)
 }
@@ -105,7 +123,8 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
     theme_phs_ylines() +
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-    facet_wrap(~hospital_name_grp)
+    facet_wrap(~hospital_name_grp) |>
+    ggiraph_default()
   
   return(spec_procsmth_plot)
 }
@@ -153,7 +172,8 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
     facet_wrap(~hospital_name_grp) +
     theme_phs_ylines() +
     theme(legend.position = 'bottom',
-          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+    ggiraph_default()
   
   return(spec_procphase_plot)
 }
@@ -201,7 +221,8 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     ) +
     theme_phs_ylines() +
     theme(legend.position = "bottom",
-          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+    ggiraph_default()
   
   return(proc_index_plot)
 }
@@ -308,7 +329,8 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
     facet_wrap(~hospital_name_grp)+
     theme_phs_ylines() +
     theme(legend.position = 'bottom',
-          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+    ggiraph_default()
   
   return(dq_comp_plot)
 }
@@ -357,7 +379,8 @@ dq_compspec_plot <- ggplot(chart_data,
   facet_wrap(~hospital_name_grp)+
   theme_phs_ylines() +
   theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) |>
+  ggiraph_default()
 
 return(dq_compspec_plot)
 }
