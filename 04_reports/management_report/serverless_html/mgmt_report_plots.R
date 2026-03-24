@@ -1,10 +1,26 @@
 ### Setup ----------------------------------------------------------------------
 
+# theme_phs for coord flip
 theme_phs_ylines <- function(){
   list(
     theme_phs(),
     theme(panel.grid.major.y = ggplot2::element_line(color = grDevices::rgb(190 / 255, 190 / 255, 190 / 255)),
           panel.grid.major.x = ggplot2::element_blank())
+  )
+}
+
+# default settings for ggiraph plots
+ggiraph_default <- function(plot){
+  girafe(ggobj = plot,
+         options = list(
+           opts_tooltip(
+             opacity = 0.6,
+             use_fill = TRUE),
+           opts_hover(css = "opacity:0.8", nearest_distance = 10),
+           opts_hover_inv(css = "opacity:0.4")),
+         height_svg = 6,
+         width_svg = 9,
+         fonts = list(sans = "Open Sans")
   )
 }
 
@@ -15,13 +31,13 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     mutate(op_mth = as.Date(op_mth),
            hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
-  util_procsmth_plot <- ggplot(data = chart_data, 
+  plot <- ggplot(data = chart_data, 
                                aes(x = op_mth, y = n, fill = hospital_name_grp,
                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                     "\n No. RAS procedures: ", n,
                                                     "\n Month: ", op_mth),
                                    data_id = hospital_name_grp)) +
-    geom_col_interactive(hover_nearest = TRUE) +
+    geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE) +
     labs(x = "Month", 
          y = "Number of cases", 
          fill = NULL,
@@ -39,22 +55,25 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(util_procsmth_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
-make_plot_util_procsday <- function(hospitals, month, hosp_colours){
+make_plot_util_procsday <- function(hospitals, hosp_colours){
   latest_month <- max(util_procsday$op_mth)
   three_month <- as.Date(latest_month %m-% months(2))
   
   chart_data <- util_procsday %>% 
     filter(op_mth >= three_month & op_mth <= latest_month, #last 3 months in data
            hospital_name_grp %in% hospitals) %>% 
+    mutate(hospital_name_grp = fct_drop(hospital_name_grp)) %>%
     group_by(hospital_name_grp, dow, .drop = FALSE) %>%
     summarise(mean_3m = round(mean(mean_procs_pd), 2)) %>% #re-do mean to make mean per day over last 3 months
     mutate(#op_mth = format(op_mth, "%Y-%m"),
            hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
-  util_procsday_plot <- ggplot(data = chart_data, 
+  plot <- ggplot(data = chart_data, 
                                aes(x = dow, y = mean_3m, fill = hospital_name_grp,
                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                     "\n Mean no. RAS procedures on ", dow,"s: ", mean_3m,
@@ -65,14 +84,16 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
     labs(x = "Day of the Week", 
          y = "Monthly mean no. RAS procedures", 
          caption = "Data from SMR01, RAS procedures only",
-         subtitle = paste0())+ 
-    #scale_fill_manual(values = hosp_colours)+
+         subtitle = paste0()) + 
+    scale_fill_manual(values = hosp_colours )+
     facet_wrap(.~ hospital_name_grp) +
     theme_phs_ylines() +
     theme(legend.position = 'none',
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(util_procsday_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 ### Specialty level tab -------------------------------------------------------
@@ -83,7 +104,7 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
     mutate(op_mth = as.Date(op_mth)) %>% 
     filter(hospital_name_grp %in% hospitals) 
   
-  spec_procsmth_plot <- ggplot(data = chart_data, 
+  plot <- ggplot(data = chart_data, 
                                aes(x = op_mth, y = n, fill = main_op_specialty,
                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                     "\n Surgical Specialty: ", main_op_specialty,
@@ -107,7 +128,9 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
     facet_wrap(~hospital_name_grp)
   
-  return(spec_procsmth_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs specialty tabs
@@ -128,7 +151,7 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
                                   labels = c("Phase 1", "Phase 2", "other")),
            op_mth = as_date(op_mth))
   
-  spec_procphase_plot <- ggplot(chart_data, 
+  plot <- ggplot(chart_data, 
                                 aes(x = op_mth, y = n, fill = fct_rev(main_op_phase),
                                     tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                      "\n Procedure phase: ", main_op_phase,
@@ -155,7 +178,9 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
     theme(legend.position = 'bottom',
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(spec_procphase_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 ### Procedure level tab --------------------------------------------------------
@@ -178,7 +203,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
                          ras_proc = "No procedures")) %>%
     mutate(op_mth = as.Date(op_mth))
   
-  proc_index_plot <- ggplot(chart_data, 
+  plot <- ggplot(chart_data, 
                             aes(x = op_mth, y = prop, fill = ras_proc, 
                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                                  "\n ", ras_proc,
@@ -203,7 +228,9 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     theme(legend.position = "bottom",
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(proc_index_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 # make_plot_proc_spec <- function(hospitals, specialty){ #this one needs specialty tabs
@@ -287,7 +314,7 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
     filter(hospital_name_grp %in% hospitals) %>%
     mutate(op_mth = as.Date(op_mth))
   
-  dq_comp_plot <- ggplot(chart_data, 
+  plot <- ggplot(chart_data, 
                          aes(x = op_mth, y = n_procs, fill = dataset,
                              tooltip = paste0("Hospital Location: ", hospital_name_grp,
                                               "\n Data source: ", dataset,
@@ -310,7 +337,9 @@ make_plot_dq_comp <- function(hospitals){ #this one does NOT need specialty tabs
     theme(legend.position = 'bottom',
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
   
-  return(dq_comp_plot)
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialty tabs
@@ -332,34 +361,36 @@ make_plot_dq_compspec <-function(hospitals, specialty){ #this one needs specialt
              dataset = c("Intuitive", "SMR01"),
              fill = list(n_procs = 0))
 
-dq_compspec_plot <- ggplot(chart_data, 
-                           aes(x = op_mth, y = n_procs, fill = dataset, 
-                               tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                "\n Data source: ", dataset,
-                                                "\n No. RAS procedures recorded: ", n_procs,
-                                                "\n Month: ", op_mth),
-                               data_id = dataset)) +
-  geom_bar_interactive(stat = "identity", position = "dodge", width = 20, hover_nearest = TRUE) +
-  labs(x = "Month", 
-       y = "No. recorded RAS procedures", 
-       fill = "Data source",
-       caption = "Data from SMR01 and Intuitive, RAS procedures only",
-       subtitle = paste0())+ 
-  scale_fill_manual(values = c("#3E8ECC","#3F085C")) + 
-  scale_y_continuous(
-    breaks = scales::breaks_width(5),
-  ) +
-  expand_limits(y = 5) +
-  scale_x_date(
-    date_breaks = "1 month",
-    date_labels = "%b %Y"
-  ) +
-  facet_wrap(~hospital_name_grp)+
-  theme_phs_ylines() +
-  theme(legend.position = 'bottom',
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
-
-return(dq_compspec_plot)
+  plot <- ggplot(chart_data, 
+                 aes(x = op_mth, y = n_procs, fill = dataset, 
+                     tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                      "\n Data source: ", dataset,
+                                      "\n No. RAS procedures recorded: ", n_procs,
+                                      "\n Month: ", op_mth),
+                     data_id = dataset)) +
+    geom_bar_interactive(stat = "identity", position = "dodge", width = 20, hover_nearest = TRUE) +
+    labs(x = "Month", 
+         y = "No. recorded RAS procedures", 
+         fill = "Data source",
+         caption = "Data from SMR01 and Intuitive, RAS procedures only",
+         subtitle = paste0())+ 
+    scale_fill_manual(values = c("#3E8ECC","#3F085C")) + 
+    scale_y_continuous(
+      breaks = scales::breaks_width(5),
+    ) +
+    expand_limits(y = 5) +
+    scale_x_date(
+      date_breaks = "1 month",
+      date_labels = "%b %Y"
+    ) +
+    facet_wrap(~hospital_name_grp)+
+    theme_phs_ylines() +
+    theme(legend.position = 'bottom',
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+  
+  plot_out <- ggiraph_default(plot)
+  
+  return(plot_out)
 }
 
 # 
