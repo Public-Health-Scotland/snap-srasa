@@ -60,13 +60,14 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
   return(plot_out)
 }
 
-make_plot_util_procsday <- function(hospitals, month, hosp_colours){
+make_plot_util_procsday <- function(hospitals, hosp_colours){
   latest_month <- max(util_procsday$op_mth)
   three_month <- as.Date(latest_month %m-% months(2))
   
   chart_data <- util_procsday %>% 
     filter(op_mth >= three_month & op_mth <= latest_month, #last 3 months in data
            hospital_name_grp %in% hospitals) %>% 
+    mutate(hospital_name_grp = fct_drop(hospital_name_grp)) %>%
     group_by(hospital_name_grp, dow, .drop = FALSE) %>%
     summarise(mean_3m = round(mean(mean_procs_pd), 2)) %>% #re-do mean to make mean per day over last 3 months
     mutate(#op_mth = format(op_mth, "%Y-%m"),
@@ -83,8 +84,8 @@ make_plot_util_procsday <- function(hospitals, month, hosp_colours){
     labs(x = "Day of the Week", 
          y = "Monthly mean no. RAS procedures", 
          caption = "Data from SMR01, RAS procedures only",
-         subtitle = paste0())+ 
-    #scale_fill_manual(values = hosp_colours)+
+         subtitle = paste0()) + 
+    scale_fill_manual(values = hosp_colours )+
     facet_wrap(.~ hospital_name_grp) +
     theme_phs_ylines() +
     theme(legend.position = 'none',

@@ -26,7 +26,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   }
   
   date_string <- paste0(format(start_date, "%B %Y"), " - ", format(latest_month, "%B %Y"))
-  
+  date_string_3m <- paste0(format(latest_month %m-% months(2), "%B %Y"), " - ", format(latest_month, "%B %Y"))
   
   ##### colours
   hosp_colours <- phs_colour_values[1:length(hosps)] |>

@@ -47,9 +47,9 @@ report_ui <- page_navbar(
         
         #### Procs by day
         ggiraph_card(
-          title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest month ({format(latest_month, '%B %Y')})"),
-          plot = make_plot_util_procsday(hosps, month = latest_month, hosp_colours),
-          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
+          title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest three months ({date_string_3m})"),
+          plot = make_plot_util_procsday(hosps, hosp_colours),
+          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
         )
       )
     ),
