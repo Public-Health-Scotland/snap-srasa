@@ -37,7 +37,7 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
                                                     "\n No. RAS procedures: ", n,
                                                     "\n Month: ", op_mth),
                                    data_id = hospital_name_grp)) +
-    geom_col_interactive(hover_nearest = TRUE) +
+    geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE) +
     labs(x = "Month", 
          y = "Number of cases", 
          fill = NULL,
