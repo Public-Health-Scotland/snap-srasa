@@ -5,7 +5,7 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   ##### Hospitals & Health Board
   hb <- str_replace(hb, " and", "&") #coerce to ampersand
   
-  hospitals <- hospitals |> filter(health_board == hb, hosp_has_robot == "Yes") |> pull(hospital_name)
+  hosps <- hospitals |> filter(health_board == hb, hosp_has_robot == "Yes") |> pull(hospital_name)
   
   ##### Dates
   if(is.null(latest_date)){
@@ -29,8 +29,8 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   
   
   ##### colours
-  hosp_colours <- phs_colour_values[1:length(hospitals)] |>
-    setNames(str_replace(hospitals, "'", "’"))
+  hosp_colours <- phs_colour_values[1:length(hosps)] |>
+    setNames(str_replace(hosps, "'", "’"))
   
   spec_colours <- c("Colorectal" = "#12436D",
                     "ENT" = "#28A197",

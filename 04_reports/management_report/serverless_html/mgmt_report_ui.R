@@ -42,13 +42,13 @@ report_ui <- page_navbar(
         #### Total procs
         ggiraph_card(
           title = str_glue("1.1 - Total number of procedures performed by RAS monthly ({date_string})"),
-          plot = make_plot_util_procsmth(hospitals, hosp_colours)
+          plot = make_plot_util_procsmth(hosps, hosp_colours)
         ),
         
         #### Procs by day
         ggiraph_card(
           title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest month ({format(latest_month, '%B %Y')})"),
-          plot = make_plot_util_procsday(hospitals, month = latest_month, hosp_colours),
+          plot = make_plot_util_procsday(hosps, month = latest_month, hosp_colours),
           "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
         )
       )
@@ -63,7 +63,7 @@ report_ui <- page_navbar(
         #### procs by specialty
         ggiraph_card(
           title = str_glue("2.1 - Number of procedures performed by RAS monthly under each specialty ({date_string})"),
-          plot = make_plot_spec_procsmth(hospitals, spec_colours)
+          plot = make_plot_spec_procsmth(hosps, spec_colours)
         ),
         
         #### procs by phase (per specialty)
@@ -73,7 +73,7 @@ report_ui <- page_navbar(
                   args = map(
                     sort(unique(spec_procsmth$main_op_specialty)),
                     ~ggiraph_nav(capitalise_first(.x),
-                                 make_plot_spec_procphase(hospitals, .x)
+                                 make_plot_spec_procphase(hosps, .x)
                     )
                   )
           ),
@@ -98,7 +98,7 @@ report_ui <- page_navbar(
                   args = map(
                     sort(unique(proc_index$main_op_specialty)),
                     ~ggiraph_nav(capitalise_first(.x),
-                                 make_plot_proc_index(hospitals, .x)
+                                 make_plot_proc_index(hosps, .x)
                     )
                   )
           ),
@@ -108,7 +108,7 @@ report_ui <- page_navbar(
         #### procs table
         card(
           card_header(str_glue("3.2 - Table of procedures performed by RAS monthly, with proportion of specialty utilisation attributable to each procedure type ({date_string})")),
-          make_table_proc_spec(hospitals),
+          make_table_proc_spec(hosps),
           "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'",
           full_screen = T,
           fillable = F
@@ -124,7 +124,7 @@ report_ui <- page_navbar(
         
         #### Intuitive comparison
         ggiraph_card(str_glue("4.1 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly ({date_string})"),
-                     make_plot_dq_comp(hospitals),
+                     make_plot_dq_comp(hosps),
                      "Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information."),
         
         #### Intuitive comparison by specialty
@@ -134,7 +134,7 @@ report_ui <- page_navbar(
                   args = map(
                     sort(unique(dq_compspec$main_op_specialty)),
                     ~ggiraph_nav(capitalise_first(.x),
-                                 make_plot_dq_compspec(hospitals, .x)
+                                 make_plot_dq_compspec(hosps, .x)
                     )
                   )
           ),
