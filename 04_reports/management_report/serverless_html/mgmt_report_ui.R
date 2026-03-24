@@ -1,21 +1,23 @@
 report_ui <- page_navbar(
   
-    ### Header
-    title = span(
-      img_base64("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa/04_reports/management_report/serverless_html/resources/phs-logo.png",
-                 style = "width:120px;"),
-      "Scottish Robotic-Assisted Surgery Audit") ,
+    ### Page options
+    window_title = "Scottish Robotic-Assisted Surgery Audit",
     navbar_options = navbar_options(
       bg = "white",
       theme = "light"
     ),
     fillable = FALSE,
     
+    ### Header
+    title = img_base64("/conf/quality/srasa/(11) Scripts/Dylan/snap-srasa/04_reports/management_report/serverless_html/resources/phs-logo.png",
+                       style = "width:120px;"),
+    nav_item("Scottish Robotic-Assisted Surgery Audit"),
+    
     ### Page one - about SRASA
     nav_panel(
       "About SRASA",
       layout_columns(
-        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
         #### Data protection warning
         includeHTML(paste0(script_dir, "/resources/mgmt-info-distribution-warning.html")),
@@ -37,7 +39,7 @@ report_ui <- page_navbar(
     nav_panel(
       "1. Total utilisation",
       layout_columns(
-        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
         #### Total procs
         ggiraph_card(
@@ -58,7 +60,7 @@ report_ui <- page_navbar(
     nav_panel(
       "2. By specialty",
       layout_columns(
-        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
         #### procs by specialty
         ggiraph_card(
@@ -89,7 +91,7 @@ report_ui <- page_navbar(
     nav_panel(
       "3. By procedure",
       layout_columns(
-        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
         #### index procs
         card(
@@ -120,7 +122,7 @@ report_ui <- page_navbar(
     nav_panel(
       "4. Data quality",
       layout_columns(
-        col_widths = breakpoints(xs = c(-2,8,-2), xxl = c(-3,6,-3)),
+        col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
         #### Intuitive comparison
         ggiraph_card(str_glue("4.1 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly ({date_string})"),
