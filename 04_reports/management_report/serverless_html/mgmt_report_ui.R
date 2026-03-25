@@ -44,7 +44,8 @@ report_ui <- page_navbar(
         #### Total procs
         ggiraph_card(
           title = str_glue("1.1 - Total number of procedures performed by RAS monthly ({date_string})"),
-          plot = make_plot_util_procsmth(hosps, hosp_colours)
+          plot = make_plot_util_procsmth(hosps, hosp_colours),
+          includeHTML(paste0(script_dir, "/resources/smr-note.html"))
         ),
         
         #### Procs by day
