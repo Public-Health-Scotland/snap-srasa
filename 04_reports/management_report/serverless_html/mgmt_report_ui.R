@@ -51,7 +51,7 @@ report_ui <- page_navbar(
         ggiraph_card(
           title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest three months ({date_string_3m})"),
           plot = make_plot_util_procsday(hosps, hosp_colours),
-          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three months. A threshold line at 1 indicates the goal of daily utilisation of each robotic system. Please see figure 1.1 to examine total utilisation figures for the past 3 months, and take notice of the information relating to SMR01 data completeness."
+          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three months. A threshold line at 1 indicates the goal of daily utilisation of each robotic system. Please see figure 1.1 to examine total utilisation figures for the latest 3 months, and take notice of the information relating to SMR01 data completeness."
         )
       )
     ),
