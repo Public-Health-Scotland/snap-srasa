@@ -51,7 +51,7 @@ report_ui <- page_navbar(
         ggiraph_card(
           title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest three months ({date_string_3m})"),
           plot = make_plot_util_procsday(hosps, hosp_colours),
-          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three month. A threshold line at 1 indicates the goal of daily utilisation of each robotic system."
+          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three months. A threshold line at 1 indicates the goal of daily utilisation of each robotic system. Please see figure 1.1 to examine total utilisation figures for the past 3 months, and take notice of the information relating to SMR01 data completeness."
         )
       )
     ),
@@ -82,7 +82,7 @@ report_ui <- page_navbar(
           card_body(
             "Note: For detail on which prioritisation phase each procedure belongs to, see the supplementary file downloadable from the 'About SRASA' page.",
             br(),
-            "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
+            "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.")
         )
       )
     ),    
@@ -111,7 +111,7 @@ report_ui <- page_navbar(
         card(
           card_header(str_glue("3.2 - Table of procedures performed by RAS monthly, with proportion of specialty utilisation attributable to each procedure type ({date_string})")),
           make_table_proc_spec(hosps),
-          "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'",
+          "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.",
           full_screen = T,
           fillable = F
         )
@@ -126,8 +126,7 @@ report_ui <- page_navbar(
         
         #### Intuitive comparison
         ggiraph_card(str_glue("4.1 - Comparison of RAS utilisation figures as recorded in SMR01 and Intuitive monthly ({date_string})"),
-                     make_plot_dq_comp(hosps),
-                     "Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information."),
+                     make_plot_dq_comp(hosps)),
         
         #### Intuitive comparison by specialty
         card(
@@ -140,7 +139,9 @@ report_ui <- page_navbar(
                     )
                   )
           ),
-          card_body("Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted' and assigned to 'General surgery'")
+          card_body("Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information.",
+                    br(),
+                    "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.")
         )
       )
     ),
