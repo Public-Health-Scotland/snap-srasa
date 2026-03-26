@@ -148,7 +148,7 @@ make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs spec
              fill = list(n = 0)) %>% 
     mutate(main_op_phase = factor(main_op_phase, 
                                   levels = c("phase1", "phase2", "other"),
-                                  labels = c("Phase 1", "Phase 2", "other")),
+                                  labels = c("Phase 1", "Phase 2", "Other")),
            op_mth = as_date(op_mth))
   
   plot <- ggplot(chart_data, 
@@ -217,7 +217,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     labs(x = "Month", 
          y = "% procedures performed using RAS",
          fill = "Surgical approach",
-         caption = "Data from SMR01, all surgical approaches to index procedure",
+         caption = "Data from SMR01, all surgical approaches to index procedure (phase 1 only)",
          subtitle = paste0("Index procedure: ", proc))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
     scale_x_date(

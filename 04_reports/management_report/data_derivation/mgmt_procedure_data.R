@@ -50,22 +50,21 @@ ras_proc_data <- ras_proc_data %>% #some aberrant coding liekly due to transfers
                                        .default = hospital_name),
          hospital_name_grp = factor(hospital_name_grp, levels = hosp_order))
 
-ras_proc_data <- ras_proc_data %>% 
-  mutate(main_op_specialty = str_remove(main_op_specialty, #collapse unlisted into main specialty
-                                        " - unlisted"))
+# ras_proc_data <- ras_proc_data %>% 
+#   mutate(main_op_specialty = str_remove(main_op_specialty, #collapse unlisted into main specialty
+#                                         " - unlisted"))
 
 
 ### Index proc, % ras vs non-ras -----------------------------------------------
 
-index_proc_list <- c("Rectal resection", "Hysterectomy", "Lobectomy of lung", "Prostatectomy", "Tonsillectomy")
+index_proc_list <- c("Rectal resection", "Hysterectomy", "Lobectomy of lung", "Prostatectomy", "Pharyngectomy")
 
 proc_index <- ras_proc_data %>% 
   mutate(main_op_type = case_when(main_op_type == "Abdominal hysterectomy" ~ "Hysterectomy", #vaginal/abdominal approach to hysterectomy not relevant... consider changign in all_ras_procs?
                                   main_op_type == "Vaginal hysterectomy" ~ "Hysterectomy",
                                   .default = main_op_type)) %>% 
   filter(main_op_type %in% index_proc_list &
-         (main_op_phase == "phase1" | 
-             main_op_phase == "phase2")) %>% 
+         (main_op_phase == "phase1")) %>% # | main_op_phase == "phase2" only want phase 1 ops as priority
   group_by(main_op_type, main_op_specialty, ras_proc, op_mth, hospital_name_grp) %>% 
   summarize(n = n()) %>% 
   group_by(main_op_type, main_op_specialty, op_mth, hospital_name_grp) %>% 

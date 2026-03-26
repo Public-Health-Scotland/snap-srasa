@@ -105,14 +105,14 @@ report_ui <- page_navbar(
                     )
                   )
           ),
-          card_body("Note: The index procedure is the main priority procedure for each specialty's transition to RAS")
+          card_body("Note: The index procedure is the main priority procedure for each specialty's transition to RAS.")
         ),
         
         #### procs table
         card(
           card_header(str_glue("3.2 - Table of procedures performed by RAS monthly, with proportion of specialty utilisation attributable to each procedure type ({date_string})")),
           make_table_proc_spec(hosps),
-          "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.",
+          "<b>Note:</b> All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.",
           full_screen = T,
           fillable = F
         )
@@ -140,9 +140,7 @@ report_ui <- page_navbar(
                     )
                   )
           ),
-          card_body("Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information.",
-                    br(),
-                    "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.")
+          card_body("Note: Records labelled 'Unspecified' here are those submitted to Intuitive without procedure information.")
         )
       )
     ),
