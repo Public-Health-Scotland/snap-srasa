@@ -34,12 +34,13 @@ produce_report <- function(hb, start_date = NULL, latest_date = NULL){
   
   spec_colours <- c("Colorectal" = "#12436D",
                     "ENT" = "#28A197",
+                    "Gastrointestinal" = "#F46A25",
+                    "General surgery" = "#A8CCE8",
                     "Gynaecology" = "#ae1e6d",
-                    "Thoracic" = "#F46A25",
-                    "Urology" = "#A285D1",
-                    "Gastrointestinal" = "#3E8ECC",
-                    "Hepatobiliary" = "#94AABD",
-                    "General surgery" = "#b1b1b1")
+                    "Hepatobiliary" = "#A285D1",
+                    "Thoracic" = "#3E8ECC",
+                    "Unlisted" = "#b1b1b1",
+                    "Urology" = "#3F085C")
   
   ##### source report UI (within function env)
   source(paste0(script_dir, "mgmt_report_ui.R"), local = TRUE)
