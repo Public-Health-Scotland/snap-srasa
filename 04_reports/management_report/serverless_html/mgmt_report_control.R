@@ -19,7 +19,7 @@ gdtools::register_gfont("Open Sans")
 # controls ----------------------------------------------------------------
 
 date_to <- Sys.Date() %>% 
-  lubridate::floor_date("month") %m-% months(3)
+  lubridate::floor_date("month") %m-% months(3) #Ensure you run this in the month BEFORE sending out the reports on the 2nd (e.g. run in march for april 2nd circulation) or change to 4 month lag
 date_from <- date_to %m-% months(12)
 health_boards <- list(
   'Ayrshire & Arran',

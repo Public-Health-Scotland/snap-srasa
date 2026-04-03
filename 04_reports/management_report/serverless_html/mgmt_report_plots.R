@@ -203,6 +203,10 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
                          ras_proc = "No procedures")) %>%
     mutate(op_mth = as.Date(op_mth))
   
+  proc_label <- replace_when(proc,
+                             proc == "Hysterectomy" ~ "Hysterectomy (endometrial cancer only)",
+                             proc == "Pharyngectomy" ~ "Pharyngectomy (cancer only)")
+  
   plot <- ggplot(chart_data, 
                             aes(x = op_mth, y = prop, fill = ras_proc, 
                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
@@ -218,7 +222,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
          y = "% procedures performed using RAS",
          fill = "Surgical approach",
          caption = "Data from SMR01, all surgical approaches to index procedure (phase 1 only)",
-         subtitle = paste0("Index procedure: ", proc))+ 
+         subtitle = paste0("Index procedure: ", proc_label))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
     scale_x_date(
       date_breaks = "1 month",
