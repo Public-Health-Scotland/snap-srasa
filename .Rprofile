@@ -104,6 +104,8 @@ conflict_prefer('lead','dplyr')
 conflict_prefer('first','dplyr')
 conflict_prefer('last', 'dplyr')
 
+conflict_prefer('yday', 'lubridate')
+
 # Function
 list.files(c("./02_setup",
              "./05_utilities"),
