@@ -120,7 +120,7 @@ ras_clean_data <- ras_clean_data %>%
                                     str_starts(unlisted_ras_proc, "E") ~ "ENT",
                                   str_starts(unlisted_ras_proc, "F") ~ "ENT",
                                   .default = "Unlisted")) %>% #unlisted_spec = case_when(!is.na(unlisted_ras_proc) ~ specialty,.default = NA) #left_join(spec_lookup, by = join_by(unlisted_spec == Code)) previously used smr spcialty for this but updated to use opcs code first letter
-  
+  ## add in step to assign smr specialty if unlisted and smr is not general surgery? for max spec info
   #then make 1 column with 1st candidate proc that appears - main_ras_proc, plus proc type, specialty, phase etc - pull the unlisted procs into that so all are in one place. 
   mutate(main_op_code = case_when(!is.na(op1_opcs_desc) ~ op1a,
                                   !is.na(op2_opcs_desc) ~ op2a,
