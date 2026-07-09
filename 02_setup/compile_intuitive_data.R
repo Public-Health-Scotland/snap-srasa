@@ -33,12 +33,15 @@ compile_intuitive_data <- function(){
       distinct() %>% 
       mutate(name = substr(filenames[[i]], 30, 32), #this is specific tot he filepath above so needs change if filepath changes
              hospital_name = case_when(name == "ARI" ~ "Aberdeen Royal Infirmary",
+                                       name == "DGR" ~ "Dumfries & Galloway Royal Infirmary",
+                                       name == "FVR" ~ "Forth Valley Royal Hospital",
                                        name == "GRI" ~ "Glasgow Royal Infirmary",
                                        name == "GJN" ~ "Golden Jubilee University National Hospital",
                                        name == "UHH" ~ "University Hospital Hairmyres",
                                        name == "NWD" ~ "Ninewells Hospital",
                                        name == "QEU" ~ "Queen Elizabeth University Hospital",
                                        name == "RHI" ~ "Raigmore Hospital",
+                                       name == "RAH" ~ "Royal Alexandra Hospital",
                                        name == "RIE" ~ "Royal Infirmary of Edinburgh at Little France",
                                        name == "SJH" ~ "St John's Hospital",
                                        name == "UHC" ~ "University Hospital Crosshouse",

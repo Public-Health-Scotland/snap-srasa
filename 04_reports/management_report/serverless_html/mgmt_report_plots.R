@@ -221,7 +221,7 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     labs(x = "Month", 
          y = "% procedures performed using RAS",
          fill = "Surgical approach",
-         caption = "Data from SMR01, all surgical approaches to index procedure (phase 1 only)",
+         caption = "Data from SMR01, all surgical approaches to index procedure (phase 1 & routine admissions only)",
          subtitle = paste0("Index procedure: ", proc_label))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
     scale_x_date(

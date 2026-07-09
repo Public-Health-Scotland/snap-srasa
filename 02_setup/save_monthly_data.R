@@ -29,4 +29,6 @@ save_monthly_data <- function(df){
   cli_progress_step("Monthly data extract complete!")
   cli_progress_done()
   
+  return(save_dfs)
+  
 }

@@ -23,7 +23,9 @@ date_to <- Sys.Date() %>%
 date_from <- date_to %m-% months(12)
 health_boards <- list(
   'Ayrshire & Arran',
+  'Dumfries & Galloway',
   'Fife',
+  'Forth Valley',
   'Grampian',
   'Greater Glasgow & Clyde',
   'GJNH',

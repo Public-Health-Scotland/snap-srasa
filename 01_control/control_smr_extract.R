@@ -4,6 +4,7 @@
 
 # Bex Madden & Dylan Lewis
 # 01/12/2025
+# Requires 15gb session
 
 ### source scripts -------------------------------------------------------------
 list.files("./02_setup/", full.names = TRUE) %>% 
@@ -18,6 +19,10 @@ extract_smr01_data() %>%
   identify_cancer_diag() %>%
   append_date_vars() %>% 
   append_lookups(which_lookups = "all") %>% 
-  save_monthly_data()
+  save_monthly_data() %>% 
+  
+# periodical DQ checks - look out for messages in console
+  dq_unlisted_procs() %>% 
+  dq_emergency_procs()
   
 
