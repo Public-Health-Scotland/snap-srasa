@@ -18,41 +18,45 @@ get_int_dwnld_params <- function(){
   #' @details Prints the parameters in the console for copy-pasting
   #' 
 
-  end_date <- Sys.Date() %>% 
-    lubridate::floor_date("month") %m-% months(2) %>% 
+  start_date <- Sys.Date() %>% 
+    lubridate::floor_date("month") %m-% months(3) %>% 
     format("%m-%d-%Y")
-  start_date <- as.Date(end_date, format = "%m-%d-%Y") %m-% months(1) %>% 
-    format("%m-%d-%Y")
+  end_date <- as.Date(start_date, format = "%m-%d-%Y") %>% 
+    lubridate::ceiling_date("month") - days(1)
+  end_date <- format(end_date, format = "%m-%d-%Y")
   
-  file_sdate <- as.Date(start_date, format = "%m-%d-%Y") %>% 
-    format("%b%y") %>% 
-    tolower()
-  file_edate <- as.Date(end_date, format = "%m-%d-%Y") %>% 
+  file_date <- as.Date(start_date, format = "%m-%d-%Y") %>% 
     format("%b%y") %>% 
     tolower()
   
-  ARI <- paste0("ARI_", file_sdate, "-", file_edate)
-  GRI <- paste0("GRI_", file_sdate, "-", file_edate)
-  GJNH <- paste0("GJNH_", file_sdate, "-", file_edate)
-  UHH <- paste0("UHH_", file_sdate, "-", file_edate)
-  NWD <- paste0("NWD_", file_sdate, "-", file_edate)
-  QEUH <- paste0("QEUH_", file_sdate, "-", file_edate)
-  RHI <- paste0("RHI_", file_sdate, "-", file_edate)
-  RIE <- paste0("RIE_", file_sdate, "-", file_edate)
-  SJH <- paste0("SJH_", file_sdate, "-", file_edate)
-  UHC <- paste0("UHC_", file_sdate, "-", file_edate)
-  VHK <- paste0("VHK_", file_sdate, "-", file_edate)
-  WGH <- paste0("WGH_", file_sdate, "-", file_edate)
+  ARI <- paste0("ARI_", file_date)
+  DGRI <- paste0("DGRI_", file_date)
+  FVRH <- paste0("FVRH_", file_date)
+  GRI <- paste0("GRI_", file_date)
+  GJNH <- paste0("GJNH_", file_date)
+  UHH <- paste0("UHH_", file_date)
+  NWD <- paste0("NWD_", file_date)
+  QEUH <- paste0("QEUH_", file_date)
+  RHI <- paste0("RHI_", file_date)
+  RAH <- paste0("RAH_", file_date)
+  RIE <- paste0("RIE_", file_date)
+  SJH <- paste0("SJH_", file_date)
+  UHC <- paste0("UHC_", file_date)
+  VHK <- paste0("VHK_", file_date)
+  WGH <- paste0("WGH_", file_date)
   
   return(list(start_date = start_date, 
               end_date = end_date,
               ARI = ARI,
+              DGRI = DGRI,
+              FVRH = FVRH,
               GRI = GRI,
               GoldenJubilee = GJNH,
               Hairmyres = UHH,
               Ninewells = NWD,
               QEUH = QEUH,
               Raigmore = RHI,
+              RAH = RAH,
               RIE = RIE,
               SJH = SJH,
               UHC = UHC,

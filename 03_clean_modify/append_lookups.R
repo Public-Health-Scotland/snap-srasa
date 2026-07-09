@@ -5,7 +5,7 @@
 # Bex Madden & Dylan Lewis
 # 01/12/2025
 
-append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural", "hospital", "specialty")){
+append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural", "hospital", "specialty", "admission_type")){
   
   #' Append lookup values to SRASA Monthly SMR01 extract according to inputs
   #'
@@ -78,6 +78,17 @@ append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural
     left_join(specialty_lookup, by = join_by(specialty == Code)) %>% 
     relocate(specialty_desc, .after = specialty) %>% 
     rename(smr_specialty = specialty, smr_specialty_desc = specialty_desc)
+  }
+  
+  if("admission_type" %in% which_lookups | "all" %in% which_lookups){
+    cli_progress_step("Adding admission type information...")
+    
+    adm_type_lookup <- read.csv(paste0(lookup_dir, "smr_admtype_lookup.csv")) %>% 
+      select(code, adm_type_grp) 
+    
+    ras_lookup_data <- ras_lookup_data %>% 
+      left_join(adm_type_lookup, by = join_by(admission_type == code)) %>% 
+      relocate(adm_type_grp, .after = admission_type)
   }
   
   return(ras_lookup_data)

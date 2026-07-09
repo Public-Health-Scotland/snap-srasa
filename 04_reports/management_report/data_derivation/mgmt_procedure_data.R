@@ -64,7 +64,8 @@ proc_index <- ras_proc_data %>%
                                   main_op_type == "Vaginal hysterectomy" ~ "Hysterectomy",
                                   .default = main_op_type)) %>% 
   filter(main_op_type %in% index_proc_list &
-         (main_op_phase == "phase1")) %>% # | main_op_phase == "phase2" only want phase 1 ops as priority
+         (main_op_phase == "phase1" & # only want phase 1 ops as priority
+            adm_type_grp == "routine")) %>% # only routine admission for index procs
   group_by(main_op_type, main_op_specialty, ras_proc, op_mth, hospital_name_grp) %>% 
   summarize(n = n()) %>% 
   group_by(main_op_type, main_op_specialty, op_mth, hospital_name_grp) %>% 

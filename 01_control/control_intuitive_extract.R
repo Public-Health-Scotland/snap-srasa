@@ -13,8 +13,13 @@ list.files("./02_setup/", full.names = TRUE) %>%
   walk(source)
 list.files("./03_clean_modify/", full.names = TRUE) %>% 
   walk(source)
+list.files("./04_reports/data_query/", full.names = TRUE) %>% 
+  walk(source)
 
 ### compile and save intuitive data --------------------------------------------
 compile_intuitive_data() %>% 
   append_intuitive_data() #need to add some checks for duplicated rows
+
+### run record-matching process and generate data query outputs ----------------
+record_matching_int_smr()
   
