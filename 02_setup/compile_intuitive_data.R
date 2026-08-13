@@ -62,7 +62,8 @@ compile_intuitive_data <- function(){
            end_date = as.Date(end_date, format = "%m-%d-%Y"),
            start_time = as.POSIXct(start_time, format="%H:%M:%S"),
            end_time = as.POSIXct(end_time, format="%H:%M:%S"),
-           op_month = floor_date(start_date, "month"))
+           op_month = floor_date(start_date, "month")) %>% 
+    filter(!is.na(start_date)) # removes any empty rows from sites with no data for the month
   
   return(intuitive_data)  
   

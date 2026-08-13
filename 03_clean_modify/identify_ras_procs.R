@@ -70,21 +70,25 @@ ras_clean_data <- ras_clean_data %>%
   left_join(all_procs_list, by = join_by(op1a == code)) %>% #find all records with any candidate procedure in any procedure a position
   rename("op1_opcs_desc" = "opcs_desc", 
          "op1_proc_type" = "proc_type",
+         "op1_proc_subtype" = "proc_subtype",
          "op1_specialty" = "proc_specialty",
          "op1_phase" = "phase") %>% 
   left_join(all_procs_list, by = join_by(op2a == code)) %>% 
   rename("op2_opcs_desc" = "opcs_desc", 
          "op2_proc_type" = "proc_type", 
+         "op2_proc_subtype" = "proc_subtype",
          "op2_specialty" = "proc_specialty",
          "op2_phase" = "phase") %>% 
   left_join(all_procs_list, by = join_by(op3a == code)) %>% 
   rename("op3_opcs_desc" = "opcs_desc", 
          "op3_proc_type" = "proc_type", 
+         "op3_proc_subtype" = "proc_subtype",
          "op3_specialty" = "proc_specialty",
          "op3_phase" = "phase") %>% 
   left_join(all_procs_list, by = join_by(op4a == code)) %>% 
   rename("op4_opcs_desc" = "opcs_desc", 
          "op4_proc_type" = "proc_type",
+         "op4_proc_subtype" = "proc_subtype",
          "op4_specialty" = "proc_specialty",
          "op4_phase" = "phase") %>% 
   
@@ -140,6 +144,11 @@ ras_clean_data <- ras_clean_data %>%
                                   !is.na(op4_opcs_desc) ~ op4_proc_type,
                                   !is.na(unlisted_ras_proc) ~ unlisted_opcs_type,
                                   .default = NA),
+         main_op_subtype = case_when(!is.na(op1_opcs_desc) ~ op1_proc_subtype,
+                                     !is.na(op2_opcs_desc) ~ op2_proc_subtype,
+                                     !is.na(op3_opcs_desc) ~ op3_proc_subtype,
+                                     !is.na(op4_opcs_desc) ~ op4_proc_subtype, #no unlisted subtype
+                                     .default = NA),
          main_op_specialty = case_when(!is.na(op1_opcs_desc) ~ op1_specialty,
                                        !is.na(op2_opcs_desc) ~ op2_specialty,
                                        !is.na(op3_opcs_desc) ~ op3_specialty,
@@ -163,10 +172,8 @@ ras_clean_data <- ras_clean_data %>%
                                       !is.na(op3_opcs_desc) ~ op3_approach,
                                       !is.na(op4_opcs_desc) ~ op4_approach,
                                       !is.na(unlisted_ras_proc) ~ "RAS",
-                                      .default = NA)) %>% 
-  group_by(link_no) %>% 
-  filter(any(!is.na(main_op_code))) %>%  #all records for any patient with a candidate or unlisted RAS proc
-  ungroup() ##DO WE WANT TO ADD A FLAG FOR INDEX PROCEDURES?
+                                      .default = NA))
+   ##DO WE WANT TO ADD A FLAG FOR INDEX PROCEDURES?
 
 ### Return df ----------------------------------------------------
 

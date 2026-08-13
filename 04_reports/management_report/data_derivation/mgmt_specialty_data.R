@@ -60,13 +60,13 @@ ras_cand_data <- ras_cand_data %>%
 spec_procsmth <- ras_cand_data %>%
   group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, ras_proc) %>% 
   summarise(n = n()) %>% 
-  ungroup() %>% 
-  group_by(op_mth, op_year, main_op_specialty, ras_proc) %>% 
-  bind_rows(summarise(.,
-                      across(where(is.numeric), sum),
-                      across(hospital_name_grp, ~"All"),
-                      .groups = "drop")) %>% 
   ungroup() 
+  # group_by(op_mth, op_year, main_op_specialty, ras_proc) %>% 
+  # bind_rows(summarise(.,
+  #                     across(where(is.numeric), sum),
+  #                     across(hospital_name_grp, ~"All"),
+  #                     .groups = "drop")) %>% 
+  # ungroup() 
 
 write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.parquet"))
 
@@ -74,13 +74,13 @@ write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.p
 spec_procphase <- ras_cand_data %>%
   group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
   summarise(n = n()) %>% 
-  ungroup() %>% 
-  group_by(op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
-  bind_rows(summarise(.,
-                      across(where(is.numeric), sum),
-                      across(hospital_name_grp, ~"All"),
-                      .groups = "drop")) %>% 
-  ungroup() 
+  ungroup()
+  # group_by(op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
+  # bind_rows(summarise(.,
+  #                     across(where(is.numeric), sum),
+  #                     across(hospital_name_grp, ~"All"),
+  #                     .groups = "drop")) %>% 
+  # ungroup() 
 
 write_parquet(spec_procphase, paste0(data_dir, "management_report/spec_procphase.parquet"))
 
