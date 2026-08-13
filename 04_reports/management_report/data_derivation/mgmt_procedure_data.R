@@ -57,7 +57,7 @@ ras_proc_data <- ras_proc_data %>% #some aberrant coding liekly due to transfers
 
 ### Index proc, % ras vs non-ras -----------------------------------------------
 
-index_proc_list <- c("Rectal resection", "Hysterectomy", "Lobectomy of lung", "Prostatectomy", "Pharyngectomy")
+index_proc_list <- c("Rectal resection", "Hysterectomy", "Anatomical lung resection", "Cystectomy", "Pharyngectomy")
 
 proc_index <- ras_proc_data %>% 
   mutate(main_op_type = case_when(main_op_type == "Abdominal hysterectomy" ~ "Hysterectomy", #vaginal/abdominal approach to hysterectomy not relevant... consider changign in all_ras_procs?

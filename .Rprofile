@@ -55,11 +55,14 @@ phase2_list <- read_csv(paste0(lookup_dir, "phase2_procedure_codes.csv")) %>%
 source("./02_setup/get_approach_lists.R")
 
 hosp_order <- c("Aberdeen Royal Infirmary",
+                "Dumfries & Galloway Royal Infirmary",
+                "Forth Valley Royal Hospital",
                 "Glasgow Royal Infirmary",
                 "Golden Jubilee University National Hospital",
                 "Ninewells Hospital",
                 "Queen Elizabeth University Hospital",
                 "Raigmore Hospital",
+                "Royal Alexandra Hospital",
                 "Royal Infirmary of Edinburgh at Little France",
                 "St John's Hospital",
                 "University Hospital Crosshouse",
