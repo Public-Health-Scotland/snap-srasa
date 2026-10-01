@@ -61,32 +61,26 @@ make_plot_util_procsmth <- function(hospitals, hosp_colours){
 }
 
 make_plot_util_procsday <- function(hospitals, hosp_colours){
-  latest_month <- max(util_procsday$op_mth)
-  three_month <- as.Date(latest_month %m-% months(2))
   
   chart_data <- util_procsday %>% 
-    filter(op_mth >= three_month & op_mth <= latest_month, #last 3 months in data
-           hospital_name_grp %in% hospitals) %>% 
+    filter(hospital_name_grp %in% hospitals) %>% 
     mutate(hospital_name_grp = fct_drop(hospital_name_grp)) %>%
-    group_by(hospital_name_grp, dow, .drop = FALSE) %>%
-    summarise(mean_3m = round(mean(mean_procs_pd), 2)) %>% #re-do mean to make mean per day over last 3 months
-    mutate(#op_mth = format(op_mth, "%Y-%m"),
-           hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
+    mutate(hospital_name_grp = str_replace(hospital_name_grp, "'", "’"))
   
   plot <- ggplot(data = chart_data, 
-                               aes(x = dow, y = mean_3m, fill = hospital_name_grp,
-                                   tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                    "\n Mean no. RAS procedures on ", dow,"s: ", mean_3m,
-                                                    "\n 3 month average: ", format(three_month, "%Y-%m"), " to ", format(latest_month, "%Y-%m")),
-                                   data_id = dow)) +
+                 aes(x = weekday, y = prop, fill = hospital_name_grp,
+                     tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                      "Device: ", hosp_device,
+                                      "\n % working days active: ", prop, "%"),
+                     data_id = weekday)) +
     geom_bar_interactive(stat = "identity", hover_nearest = TRUE)+
-    geom_hline_interactive(yintercept = 1, linetype = "dashed", color = "grey30")+
+    geom_hline_interactive(yintercept = 100, linetype = "dashed", color = "grey30")+
     labs(x = "Day of the Week", 
-         y = "Monthly mean no. RAS procedures", 
-         caption = "Data from SMR01, RAS procedures only",
+         y = "% Working days device active", 
+         caption = "Data from Intuitive, RAS procedures only",
          subtitle = paste0()) + 
-    scale_fill_manual(values = hosp_colours )+
-    facet_wrap(.~ hospital_name_grp) +
+    scale_fill_manual(values = hosp_colours)+
+    facet_wrap(.~ hosp_device, labeller = label_wrap_gen(width = 27)) +
     theme_phs_ylines() +
     theme(legend.position = 'none',
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
@@ -204,8 +198,15 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
     mutate(op_mth = as.Date(op_mth))
   
   proc_label <- replace_when(proc,
-                             proc == "Hysterectomy" ~ "Hysterectomy (endometrial cancer only)",
-                             proc == "Pharyngectomy" ~ "Pharyngectomy (cancer only)")
+                             proc == "Left-sided resection" ~ "Left-sided resection & Right-sided resection (cancer only)",
+                             proc == "Right-sided resection" ~ "Left-sided resection & Right-sided resection (cancer only)",
+                             proc == "Hysterectomy" ~ "Hysterectomy (cancer only)",
+                             proc == "Tonsillectomy" ~ "Tonsillectomy & Pharyngectomy (cancer only)",
+                             proc == "Pharyngectomy" ~ "Tonsillectomy & Pharyngectomy (cancer only)",
+                            proc == "Anatomical lung resection" ~ "Anatomical lung resection & Thymectomy",
+                            proc == "Thymectomy" ~ "Anatomical lung resection & Thymectomy",
+                            proc == "Nephroureterectomy" ~ "Cystectomy & Nephroureterectomy",
+                            proc == "Cystectomy" ~ "Cystectomy & Nephroureterectomy")
   
   plot <- ggplot(chart_data, 
                             aes(x = op_mth, y = prop, fill = ras_proc, 
@@ -216,13 +217,13 @@ make_plot_proc_index <- function(hospitals, specialty){ #this one needs specialt
                                                  "\n Month: ", op_mth),
                                 data_id = op_mth)) + 
     geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE) +
-    facet_wrap(~ hospital_name_grp)+ 
+    facet_grid(main_op_type ~ hospital_name_grp) + #- to get 2 key procs? original =  facet_wrap(~ hospital_name_grp)+ #
     #geom_hline(aes(yintercept = hline), colour = "orange", linetype="dashed")+ #threshold
     labs(x = "Month", 
          y = "% procedures performed using RAS",
          fill = "Surgical approach",
-         caption = "Data from SMR01, all surgical approaches to index procedure (phase 1 & routine admissions only)",
-         subtitle = paste0("Index procedure: ", proc_label))+ 
+         caption = "Data from SMR01, all surgical approaches to key procedure (routine admissions only)",
+         subtitle = paste0("Key procedure: ", proc_label))+ 
     scale_fill_manual(values = c("Non-RAS" = "#94AABD", "RAS" = "#12436D", "No procedures" = "#b1b1b1"))+
     scale_x_date(
       date_breaks = "1 month",

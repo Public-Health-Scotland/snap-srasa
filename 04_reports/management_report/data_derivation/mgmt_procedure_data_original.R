@@ -57,27 +57,17 @@ ras_proc_data <- ras_proc_data %>% #some aberrant coding liekly due to transfers
 
 ### Index proc, % ras vs non-ras -----------------------------------------------
 
-index_proc_list <- c("Left-sided resection", "Right-sided resection",
-                    "Hysterectomy", "Hysterectomy - endometrial cancer",
-                    "Anatomical lung resection", "Thymectomy",
-                    "Cystectomy", "Nephroureterectomy",
-                    "Pharyngectomy", "Tonsillectomy")
+index_proc_list <- c("Left-sided resection", "Hysterectomy", "Anatomical lung resection", "Cystectomy", "Pharyngectomy")
 
 proc_index <- ras_proc_data %>% 
-  mutate(#main_op_type = case_when(main_op_type == "Abdominal hysterectomy" ~ "Hysterectomy", #vaginal/abdominal approach to hysterectomy not relevant... consider changign in all_ras_procs?
-  #                                 main_op_type == "Vaginal hysterectomy" ~ "Hysterectomy",
-  #                                 .default = main_op_type)) %>% 
-         main_op_type = case_when(main_op_specialty == "Colorectal" &
-                                    is.na(cancer_surgery) ~ paste0(main_op_type, " - benign"), #exclude non-cancer colorectal cases
-                                  main_op_specialty == "Gynaecology" &
-                                    is.na(cancer_surgery) ~ paste0(main_op_type, " - benign"),
-                                  main_op_specialty == "Gynaecology" &
-                                    main_op_phase == "phase1" ~ paste0(main_op_type, " - endometrial cancer"),
-                                  main_op_specialty == "ENT" &
-                                    is.na(cancer_surgery) ~ paste0(main_op_type, " - benign"),
-                                  .default = main_op_type)) %>%
+  mutate(main_op_type = case_when(main_op_type == "Abdominal hysterectomy" ~ "Hysterectomy", #vaginal/abdominal approach to hysterectomy not relevant... consider changign in all_ras_procs?
+                                  main_op_type == "Vaginal hysterectomy" ~ "Hysterectomy",
+                                  .default = main_op_type)) %>% 
+         # main_op_type = case_when(main_op_specialty == "Colorectal" &
+         #                            is.na(cancer_surgery) ~ paste0(main_op_type, " - benign"), #exclude non-cancer colorectal cases
+         #                          .default = main_op_type)) %>% 
   filter(main_op_type %in% index_proc_list &
-         (#main_op_phase == "phase1" & # only want phase 1 ops as priority
+         (main_op_phase == "phase1" & # only want phase 1 ops as priority
             adm_type_grp == "routine")) %>% # only routine admission for index procs
   group_by(main_op_type, main_op_specialty, ras_proc, op_mth, hospital_name_grp) %>% 
   summarize(n = n()) %>% 
