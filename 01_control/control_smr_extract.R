@@ -13,12 +13,12 @@ list.files("./03_clean_modify/", full.names = TRUE) %>%
   walk(source)
 
 ### extract smr01 data ---------------------------------------------------------
-extract_smr01_data() %>% 
+df <- extract_smr01_data() %>% 
   identify_ras_procs() %>%
-  idenfity_oropharynx_diags() %>% 
+  identify_oropharynx_diags() %>% 
   filter_extract() %>% 
   adjust_phase_diag() %>%
-  identify_cancer_diag() %>%
+  append_cancer_diag() %>%  # previously identify_cancer_diag() %>% 
   append_date_vars() %>% 
   append_lookups(which_lookups = "all") %>% 
   save_monthly_data()

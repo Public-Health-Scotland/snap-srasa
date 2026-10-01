@@ -13,9 +13,8 @@
 # Then using surgical specialty and fuzzy marging around date - E
 # Then checking surgeries without RAS tag, using op type and fuzzy date - F
 
-record_matching_int_smr <- function(op_month = Sys.Date() %>% 
-                                      lubridate::floor_date("month") %m-% months(5) %>% 
-                                      format("%d-%m-%Y")) {
+record_matching_int_smr <- function(month = Sys.Date() %>% 
+                                      lubridate::floor_date("month") %m-% months(5)) {
   
   ### Load in data ----'
   # Intuitive
@@ -24,7 +23,7 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     distinct()
   
   int_minimal <- read_parquet(paste0(data_dir, "intuitive/intuitive_rolling_data.parquet")) %>% 
-    filter(op_month == op_month) %>% 
+    filter(op_month == as.Date(month)) %>% 
     select(op_date = start_date, 
            hospital_name, 
            spec = specialty, 
@@ -35,7 +34,7 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
   smr_data <- read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) 
   
   smr_minimal <- smr_data %>% 
-    filter(op_mth == op_month & 
+    filter(op_mth == as.Date(month) & 
              ras_proc == TRUE) %>% 
     select(op_date = main_op_date, 
            hospital_name, 
@@ -52,7 +51,7 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     hosp <- i
     ### Prepare data for joining -----
     # Intuitive
-    int_gri <- int_minimal %>% 
+    int_hosp <- int_minimal %>% 
       filter(hospital_name == hosp) %>% 
       group_by(op_date, srasa_type) %>% 
       mutate(id_no = seq_along(srasa_type), # to uniquely identifying identical same-day surgeries
@@ -60,7 +59,7 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
       ungroup()
     
     # SMR01
-    smr_gri <- smr_minimal %>% 
+    smr_hosp <- smr_minimal %>% 
       filter(hospital_name == hosp) %>% 
       mutate(main_op_type = replace_when(main_op_type, 
                                          main_op_type == "Abdominal hysterectomy" | 
@@ -70,10 +69,11 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
              surgery_id = str_c(as.character(op_date), main_op_type, id_no, sep = " "), # make a unique id for each procedure to match than in int_gri
              main_op_specialty = replace_when(main_op_specialty, 
                                               main_op_specialty == "Unlisted" & #get more specialty info for unlisted procedures if it can be gleaned from smr_spec
-                                                smr_spec != "General Surgery" ~ smr_spec)) %>% 
+                                                smr_spec != "General Surgery" ~ smr_spec),
+             op_date = as.Date(op_date, format = "%Y-%m-%d")) %>% 
       ungroup()
     
-    smr_joining <- smr_gri %>% 
+    smr_joining <- smr_hosp %>% 
       select(surgery_id, upi_number)
     
     # Define hospital acronym for use in filenames
@@ -91,26 +91,29 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     }else if(hosp == "Victoria Hospital") {paste0("VHK")
     }else if(hosp == "Western General Hospital") {paste0("WGH")
     }else if(hosp == "Raigmore Hospital") {paste0("RHI")
+    }else if(hosp == "Dumfries & Galloway Royal Infirmary") {paste0("DGRI")
+    }else if(hosp == "Forth Valley Royal Hospital") {paste0("FVRH")
+    }else if(hosp == "Royal Alexandra Hospital") {paste0("RAH")
     }else{paste0("Other")}
     
     
     
     ### Join A -----
     # op type and op date
-    gri_merged <- int_gri %>% 
+    matched_data <- int_hosp %>% 
       left_join(smr_joining, by = join_by(surgery_id)) %>% 
       rename(join_a = upi_number)
     
     ##### Make lists of unmatched ops in each dataset -----
-    success_list <- gri_merged %>% # list of ids for the procedures we have matched
+    success_list <- matched_data %>% # list of ids for the procedures we have matched
       filter(!is.na(join_a)) %>% 
       dplyr::pull(surgery_id)
     
-    failed_smr <- smr_gri %>% 
+    failed_smr <- smr_hosp %>% 
       filter(!surgery_id %in% success_list) %>% 
       mutate(day_in_year = yday(op_date))
     
-    failed_int <- int_gri %>% 
+    failed_int <- int_hosp %>% 
       filter(!surgery_id %in% success_list) %>% 
       mutate(day_in_year = yday(op_date))
     
@@ -118,7 +121,7 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     # take SMR procs not tagged as RAS and search for matches there
     # Prep non-RAS data
     non_ras_smr <- smr_data %>% 
-      filter(op_mth == op_month & 
+      filter(op_mth == month & 
                ras_proc == FALSE &
                hospital_name == hosp) %>% 
       mutate(main_op_type = replace_when(main_op_type, 
@@ -129,7 +132,8 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
              main_op_specialty = replace_when(main_op_specialty, 
                                               main_op_specialty == "Unlisted" & #get more specialty info for unlisted procedures if it can be gleaned from smr_spec
                                                 smr_specialty_desc != "General Surgery" ~ smr_specialty_desc),
-             day_in_year = yday(main_op_date)) %>% 
+             day_in_year = yday(main_op_date),
+             main_op_date = as.Date(main_op_date, format = "%Y-%m-%d")) %>% 
       select(op_date = main_op_date, 
              hospital_name, 
              smr_spec = smr_specialty_desc, 
@@ -140,19 +144,24 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     
     # Join on op type and date
     join_b_data <- failed_int %>% 
-      inner_join(non_ras_smr, by = join_by(srasa_type == main_op_type, op_date)) %>% 
+      inner_join(non_ras_smr, by = join_by(srasa_type == main_op_type, op_date), relationship = "many-to-many") %>% 
       select(surgery_id_int = surgery_id,
              upi_number, 
              smr_date = op_date, 
              main_op_type = srasa_type, 
              main_op_specialty) %>% 
-      mutate(join = "join_b")
+      mutate(join = "join_b") %>% 
+      mutate(format_key = consecutive_id(surgery_id_int), .before = 1,
+             format_key = case_when((format_key %% 2) == 0 ~ 2,
+                                    .default = 1))
+    
+    #write_csv(join_b_data, paste0(data_dir, "monthly_data_query/join_b_", hb_acronym, "_", month, ".csv"))
     
     ##### Join B results into main data -----
-    gri_merged <- join_b_data %>%  
+    matched_data <- join_b_data %>%  
       group_by(surgery_id_int) %>% 
       summarise(join_b = n()) %>% 
-      right_join(gri_merged, by = join_by(surgery_id_int == surgery_id)) %>% 
+      right_join(matched_data, by = join_by(surgery_id_int == surgery_id)) %>% 
       relocate(join_b, .after = join_a)
     
     ### Join C -----
@@ -168,16 +177,16 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
       mutate(join = "join_c")
     
     ##### Join C results into main data -----
-    gri_merged <- join_c_data %>%  
+    matched_data <- join_c_data %>%  
       group_by(surgery_id_int) %>% 
       summarise(join_c = n()) %>% 
-      right_join(gri_merged, by = join_by(surgery_id_int)) %>% 
+      right_join(matched_data, by = join_by(surgery_id_int)) %>% 
       relocate(join_c, .after = join_b)
     
     ### Join D -----
     # op date and surgical specialty 
     join_d_data <- failed_int %>% 
-      inner_join(failed_smr, by = join_by(op_date, srasa_spec == main_op_specialty)) %>% 
+      inner_join(failed_smr, by = join_by(op_date, srasa_spec == main_op_specialty), relationship = "many-to-many") %>% 
       select(surgery_id_int = surgery_id.x, 
              upi_number, 
              smr_date = op_date, 
@@ -186,16 +195,16 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
       mutate(join = "join_d")
     
     ##### Join D results into main data -----
-    gri_merged <- join_d_data %>% 
+    matched_data <- join_d_data %>% 
       group_by(surgery_id_int) %>% 
       summarise(join_d = n()) %>%  
-      right_join(gri_merged, by = join_by(surgery_id_int)) %>% 
+      right_join(matched_data, by = join_by(surgery_id_int)) %>% 
       relocate(join_d, .after = join_c)
     
     ### Join E -----
     # surgical specialty and fuzzy date
     join_e_data <- failed_int %>% 
-      difference_inner_join(failed_smr, by = "day_in_year", max_dist = 2) %>% 
+      difference_inner_join(failed_smr, by = "day_in_year", max_dist = 1) %>% 
       filter(srasa_spec == main_op_specialty) %>% 
       select(surgery_id_int = surgery_id.x, 
              upi_number, 
@@ -205,10 +214,10 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
       mutate(join = "join_e")
     
     ##### Join E results into main data -----
-    gri_merged <- join_e_data %>%  
+    matched_data <- join_e_data %>%  
       group_by(surgery_id_int) %>% 
       summarise(join_e = n()) %>% 
-      right_join(gri_merged, by = join_by(surgery_id_int)) %>% 
+      right_join(matched_data, by = join_by(surgery_id_int)) %>% 
       relocate(join_e, .after = join_d)
     
     ### Join F -----
@@ -224,22 +233,25 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
       mutate(join = "join_f")
     
     ##### Join F results into main data -----
-    gri_merged <- join_f_data %>%  
+    matched_data <- join_f_data %>%  
       group_by(surgery_id_int) %>% 
       summarise(join_f = n()) %>% 
-      right_join(gri_merged, by = join_by(surgery_id_int)) %>% 
+      right_join(matched_data, by = join_by(surgery_id_int)) %>% 
       relocate(join_f, .after = join_e)
     
     ### Update lists of unmatched ops from each dataset -----
     # Intuitive
-    failed_int_info <- gri_merged %>% 
+    failed_int_info <- matched_data %>% 
       filter(!surgery_id_int %in% success_list) %>% 
       mutate(match_found = case_when(!is.na(join_b) | !is.na(join_c) | !is.na(join_d) | !is.na(join_e) | !is.na(join_f) ~ NA,
                                      .default = "no match"))
     
     unmatched_records_int <- failed_int_info %>% 
       filter(match_found == "no match") %>% 
-      write_csv(paste0(data_dir, "monthly_data_query/unmatched_records_int_", hb_acronym, "_", op_month, ".csv"))
+      mutate(format_key = consecutive_id(surgery_id_int), .before = 1,
+             format_key = case_when((format_key %% 2) == 0 ~ 2,
+                                    .default = 1))# %>% 
+      #write_csv(paste0(data_dir, "monthly_data_query/unmatched_records_int_", hb_acronym, "_", month, ".csv"))
     
     # SMR01
     failed_smr_info <- failed_smr %>% 
@@ -256,10 +268,16 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
     
     unmatched_records_smr <- failed_smr_info %>% 
       filter(match_found == "no match") %>% 
-      write_csv(paste0(data_dir, "monthly_data_query/unmatched_records_smr_", hb_acronym, "_", op_month, ".csv"))
+      ungroup() %>% 
+      mutate(format_key = consecutive_id(surgery_id), .before = 1,
+             format_key = case_when((format_key %% 2) == 0 ~ 2,
+                                    .default = 1)) # %>% 
+     # write_csv(paste0(data_dir, "monthly_data_query/unmatched_records_smr_", hb_acronym, "_", month, ".csv"))
     
     # Make single list of join result details
-    join_results <- rbind(join_b_data, join_c_data, join_d_data, join_e_data, join_f_data) %>% 
+    join_results <- join_b_data %>% 
+      select(-format_key) %>% 
+      rbind(join_c_data, join_d_data, join_e_data, join_f_data) %>% 
       group_by(surgery_id_int, upi_number) %>% 
       mutate(join = case_when(any(join == "join_b") ~ "join_b", # any duplicate matches, label with first join in which they appear
                               any(join == "join_c") ~ "join_c",
@@ -275,10 +293,86 @@ record_matching_int_smr <- function(op_month = Sys.Date() %>%
                                          .default = NA),
              location = hosp) %>% 
       group_by(surgery_id_int) %>% 
-      distinct() %>% 
+      distinct() %>% # order by join and slice(1) instead to only get best match? how much value added by providing more possible matches that are a poorer fit? but if same join identifies 2 options do we want both? query with terminology testers
       arrange(surgery_id_int, join) %>% 
-      write_csv(paste0(data_dir, "monthly_data_query/join_result_detail_", hb_acronym, "_", op_month, ".csv"))
+      write_csv(paste0(data_dir, "monthly_data_query/join_result_detail_", hb_acronym, "_", month, ".csv"))
     
+    # Keep only first join's match for reporting purposes
+    join_results_firstmatch <- join_results %>% 
+      group_by(surgery_id_int) %>% 
+      mutate(join_no = consecutive_id(join)) %>% 
+      filter(join_no == 1) %>% 
+      select(-join_no) %>% 
+      ungroup() %>% 
+      mutate(format_key = consecutive_id(surgery_id_int), .before = 1,
+             format_key = case_when((format_key %% 2) == 0 ~ 2,
+                                    .default = 1))
+    
+    # Save out excel -----
+    wb <- createWorkbook()
+    
+    addWorksheet(wb, "Records missing RAS code")
+    addWorksheet(wb, "Possible matches")
+    addWorksheet(wb, "RAS surgeries not found in SMR")
+    addWorksheet(wb, "SMR records without match")
+    
+    writeData(wb, sheet = "Records missing RAS code", x = join_b_data, startRow = 1, startCol = 1)
+    writeData(wb, sheet = "Possible matches", x = join_results_firstmatch, startRow = 1, startCol = 1)
+    writeData(wb, sheet = "RAS surgeries not found in SMR", x = unmatched_records_int, startRow = 1, startCol = 1)
+    writeData(wb, sheet = "SMR records without match", x = unmatched_records_smr, startRow = 1, startCol = 1)
+    
+    # formatting to make easier to read
+    alt_ids <- createStyle(bgFill = "#B4DEDB")
+    white_txt <- createStyle(fontColour = "white")
+    
+    conditionalFormatting(wb,  sheet = "Records missing RAS code", 
+                          cols = 2:(ncol(join_b_data)), rows = 2:(nrow(join_b_data)+1), 
+                          rule = "$A2 == 1", type = "expression", style = alt_ids)
+    setColWidths(wb, sheet = "Records missing RAS code", 
+                 cols = 2:(ncol(join_b_data)), widths = "auto")
+    setColWidths(wb, sheet = "Records missing RAS code", 
+                 cols = 1, widths = 1)
+    addStyle(wb, sheet = "Records missing RAS code", style = white_txt,
+             rows = 1:(nrow(join_b_data)+1), cols = 1)
+    
+    conditionalFormatting(wb,  sheet = "Possible matches", 
+                          cols = 2:ncol(join_results_firstmatch), rows = 2:(nrow(join_results_firstmatch)+1), 
+                          rule = "$A2 == 1", type = "expression", style = alt_ids)
+    setColWidths(wb, sheet = "Possible matches", 
+                 cols = 2:(ncol(join_results_firstmatch)), widths = "auto")
+    setColWidths(wb, sheet = "Possible matches", 
+                 cols = 1, widths = 1)
+    addStyle(wb, sheet = "Possible matches", style = white_txt,
+             rows = 1:(nrow(join_results_firstmatch)+1), cols = 1)
+    
+    conditionalFormatting(wb,  sheet = "RAS surgeries not found in SMR", 
+                          cols = 2:ncol(unmatched_records_int), rows = 2:(nrow(unmatched_records_int)+1), 
+                          rule = "$A2 == 1", type = "expression", style = alt_ids)
+    setColWidths(wb, sheet = "RAS surgeries not found in SMR", 
+                 cols = 2:(ncol(unmatched_records_int)), widths = "auto")
+    setColWidths(wb, sheet = "RAS surgeries not found in SMR", 
+                 cols = 1, widths = 1)
+    addStyle(wb, sheet = "RAS surgeries not found in SMR", style = white_txt,
+             rows = 1:(nrow(unmatched_records_int)+1), cols = 1)
+    
+    conditionalFormatting(wb,  sheet = "SMR records without match", 
+                          cols = 2:ncol(unmatched_records_smr), rows = 2:(nrow(unmatched_records_smr)+1), 
+                          rule = "$A2 == 1", type = "expression", style = alt_ids)
+    setColWidths(wb, sheet = "SMR records without match", 
+                 cols = 2:(ncol(unmatched_records_smr)), widths = "auto")
+    setColWidths(wb, sheet = "SMR records without match", 
+                 cols = 1, widths = 1)
+    addStyle(wb, sheet = "SMR records without match", style = white_txt,
+             rows = 1:(nrow(unmatched_records_smr)+1), cols = 1)
+  
+    
+    if(nrow(join_results) >= 1){
+    saveWorkbook(wb, paste0(data_dir, "monthly_data_query/RAS_data_query_", hb_acronym, "_", month, ".xlsx"), overwrite = TRUE)
+      
+    message(paste0(hb_acronym, " record-matching data saved."))
+    } else {
+      message(paste0("No mismatches for ", hb_acronym))
+    }
   }
 }
 

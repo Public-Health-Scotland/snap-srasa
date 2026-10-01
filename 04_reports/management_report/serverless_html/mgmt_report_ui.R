@@ -50,9 +50,9 @@ report_ui <- page_navbar(
         
         #### Procs by day
         ggiraph_card(
-          title = str_glue("1.2 - Mean daily utilisation of RAS system in the latest three months ({date_string_3m})"),
+          title = str_glue("1.2 - Proportion of working days device in use ({date_string})"),
           plot = make_plot_util_procsday(hosps, hosp_colours),
-          "Note: This plot shows the number of procedures performed robotically on each day of the week, averaged over the most recent three months. A threshold line at 1 indicates the goal of daily utilisation of each robotic system. Please see figure 1.1 to examine total utilisation figures for the latest 3 months, and take notice of the information relating to SMR01 data completeness."
+          "Note: This plot shows the % of working days (excluding bank holidays) on which each device was used, by weekday over the year presented in this report."
         )
       )
     ),
@@ -94,9 +94,9 @@ report_ui <- page_navbar(
       layout_columns(
         col_widths = breakpoints(xs = 12, lg = c(-2,8,-2), xxl = c(-3,6,-3)),
         
-        #### index procs
+        #### key procs
         card(
-          card_header(str_glue("3.1 - Proportion of the index procedure performed by RAS monthly, by specialty ({date_string})")),
+          card_header(str_glue("3.1 - Proportion of the key procedure performed by RAS monthly, by specialty ({date_string})")),
           do.call(navset_pill,
                   args = map(
                     sort(unique(proc_index$main_op_specialty)),
@@ -105,7 +105,7 @@ report_ui <- page_navbar(
                     )
                   )
           ),
-          card_body("Note: The index procedure is the main priority procedure for each specialty's transition to RAS.")
+          card_body("Note: The key procedure is the main priority procedure for each specialty's transition to RAS.")
         ),
         
         #### procs table

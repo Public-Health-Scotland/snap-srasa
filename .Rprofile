@@ -37,6 +37,7 @@ library(ggalluvial)
 library(cli)
 library(conflicted)
 library(fuzzyjoin)
+library(openxlsx)
 
 library(phsverse)
 library(phslookups)
@@ -92,6 +93,24 @@ age_group_order = c("0-4","5-9","10-14","15-19","20-24","25-29",
                     "55-59","60-64","65-69","70-74","75-79",
                     "80-84","85-89","90+")
 
+#colours:
+  col1 <- "#12436D"
+  col1_lt <- "#94AABD"
+  col2 <- "#28A197"
+  col2_lt <- "#B4DEDB"
+  col3 <- "#801650"
+  col3_lt <- "#CCA2B9"
+  col4 <- "#F46A25"
+  col4_lt <- "#FBC3A8"
+  col5 <- "#3D3D3D"
+  col5_lt <- "#A8A8A8"
+  col6 <- "#3E8ECC"
+  col6_lt <- "#A8CCE8"
+  col7 <- "#3F085C"
+  col7_lt <- "#A285D1"
+  col8 <- "#A285D1"
+
+
 # Conflict preferences
 conflict_prefer('filter','dplyr')
 conflict_prefer('mutate','dplyr')
@@ -118,23 +137,23 @@ list.files(c("./02_setup",
   walk(source)
 
 # Project screen
-cat("
-
- Welcome to the SNAP SRASA project!
-     _______                   ________ 
-    |ooooooo|      ____       | __  __ |
-    |[]+++[]|     [____]      ||SN||AP||
-    |+ ___ +|    ](.)(.)[     ||__||__||
-    |:|PHS|:|   ___\\--/___    |[][][][]|    
-    |:|___|:|  |__|    |__|   |++++++++|
-    |[]===[]|   | |____| |    | ______ |
-    |||||||||   |_| __ |_|    ||R0B0T5||
-    ||||||||| _ |_|[::]|_| __ ||______||    
-    |_______|     |_||_|      |________|   
-                  |_||_|                   
-                 _|_||_|_                  
-                |___||___|   
+cat("\014\033[0;35m
+Welcome to the SNAP SRASA project! \033[0m\n",
+    "\033[0;32m
+              ____
+             [____]
+            ](◦)(◦)[
+           ___\\--/___
+          |__| >< |__|
+           | |____| |
+           |_| __ |_|
+           |_|[::]|_|
+  vWv        |_||_|        vWv
+  (_)        |_||_|        (_)
+   |        _|_||_|_        |
+__\\|/______|___||___|______\\|/__
                
-")
+\033[0m\n")
+
 
 
