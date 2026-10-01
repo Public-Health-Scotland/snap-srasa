@@ -25,7 +25,10 @@ filter_extract <- function(df){
 filter_df <- df %>% 
   group_by(link_no) %>% 
   filter(any(!is.na(main_op_code)) | any(!is.na(ras_oropharynx))) %>%  #all records for any patient with a candidate or unlisted RAS proc
-  ungroup()
+  ungroup() %>% 
+  
+  distinct(upi_number, link_no, cis_marker, admission_date, discharge_date, #remove duplicate rows with no new information
+           discharge, op1a, op1_date, location, .keep_all = TRUE)
 
 ### Return df ----------------------------------------------------
 

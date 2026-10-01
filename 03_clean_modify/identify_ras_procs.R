@@ -172,8 +172,21 @@ ras_clean_data <- ras_clean_data %>%
                                       !is.na(op3_opcs_desc) ~ op3_approach,
                                       !is.na(op4_opcs_desc) ~ op4_approach,
                                       !is.na(unlisted_ras_proc) ~ "RAS",
-                                      .default = NA))
-   ##DO WE WANT TO ADD A FLAG FOR INDEX PROCEDURES?
+                                      .default = NA)) %>% 
+  unite("all_ops", op1a, op1b, op2a, op2b, op3a, op3b, op4a, op4b, remove = FALSE, na.rm=TRUE) %>% # make 'all ops' concatenated column for searching additional diagnoses?
+
+  mutate(main_op_type = replace_when(main_op_type,
+                                     main_op_code %in% c("M021", "M025") &
+                                       grepl("M18", all_ops) ~ "Nephroureterectomy")) # reclassify if nephrectomy code paired with ureterectomy
+
+# additional diagnoses relevant to hysterectomy - both need DQ improvement so consider monitoring
+# unite("all_diags", diag1, diag2, diag3, diag4, diag5, diag6, remove = FALSE, na.rm=TRUE) %>% 
+# hysterectomy_add_diag = case_when(main_op_type == "Hysterectomy" &
+#                                      grepl("T85|T87", all_ops) ~ "Lymphadenectomy", ##"T855|T857|T875|T878" too specific
+#                                   main_op_type == "Hysterectomy" & 
+#                                      grepl("E66", all_diags) ~ "Obesity",
+#                                   .default = NA))
+
 
 ### Return df ----------------------------------------------------
 
