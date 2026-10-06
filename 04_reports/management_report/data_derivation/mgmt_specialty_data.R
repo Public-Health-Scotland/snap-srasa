@@ -70,57 +70,48 @@ spec_procsmth <- ras_cand_data %>%
 
 write_parquet(spec_procsmth, paste0(data_dir, "management_report/spec_procsmth.parquet"))
 
+##### RAS and Non-RAS procedures for patients with cancer diagnoses ----
+# whole year by specialty and location
+# min data keeping non-ras procs
+
+spec_appdiag <-  read_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet")) %>% 
+  filter(op_mth >= yr_start & 
+           op_mth < yr_end) %>%
+  mutate(hospital_name_grp = case_when(hospital_name %in% wrong_hosp ~ "Other Hospital Listed", #contains non-RAS and private hospitals
+                                       .default = hospital_name),
+         hospital_name_grp = factor(hospital_name_grp, levels = hosp_order)) %>% 
+  
+  mutate(cancer_binary = case_when(!is.na(cancer_surgery) ~ "Cancer",
+                                   .default = "Benign")) %>% 
+  group_by(main_op_specialty, hosp_health_board, ras_proc, cancer_binary, hospital_name_grp) %>% 
+  summarise(n=n()) %>% 
+  group_by(main_op_specialty, hosp_health_board, cancer_binary, hospital_name_grp) %>% 
+  mutate(total = sum(n),
+         prop = round(n/total*100, 2),
+         ras_proc = as.factor(ras_proc),
+         ras_proc = case_when(ras_proc == "TRUE" ~ "RAS",
+                              ras_proc == "FALSE" ~ "Non-RAS",
+                              .default = NA)) %>% 
+  ungroup() %>% 
+  tidyr::complete(hospital_name_grp, # might as well do this here rather than in the report script
+                  nesting(main_op_specialty, cancer_binary),
+                  fill = list(n = 0, total = 0, prop = 100, ras_proc = "No procedures")) 
+
+write_parquet(spec_appdiag, paste0(data_dir, "management_report/spec_appdiag.parquet"))
+
 ### Phases of conducted ras procs per specialty --------------------------------
-spec_procphase <- ras_cand_data %>%
-  group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
-  summarise(n = n()) %>% 
-  ungroup()
-  # group_by(op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
-  # bind_rows(summarise(.,
-  #                     across(where(is.numeric), sum),
-  #                     across(hospital_name_grp, ~"All"),
-  #                     .groups = "drop")) %>% 
-  # ungroup() 
-
-write_parquet(spec_procphase, paste0(data_dir, "management_report/spec_procphase.parquet"))
-
-
-
-
-
-
-##### Weekly no. procs by specialty and location, shown monthly ----------------
-#until i can figure out mean no per spec per day of the week per month
-# equity_specsday <- ras_cand_data %>%
-#   filter(main_op_date >= start_date & 
-#            main_op_date < latest_date) %>% 
-#   group_by(hospital_name, op_mth, op_year, main_op_date, main_op_specialty, ras_proc) %>% 
+# spec_procphase <- ras_cand_data %>%
+#   group_by(hospital_name_grp, hosp_health_board, op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
 #   summarise(n = n()) %>% 
-#   ungroup() %>% 
-#   group_by(op_mth, op_year, main_op_specialty, ras_proc) %>% 
-#   bind_rows(summarise(.,
-#                       across(where(is.numeric), sum),
-#                       across(hospital_name, ~"All"),
-#                       .groups = "drop")) %>% 
 #   ungroup()
+#   # group_by(op_mth, op_year, main_op_specialty, main_op_phase, ras_proc) %>% 
+#   # bind_rows(summarise(.,
+#   #                     across(where(is.numeric), sum),
+#   #                     across(hospital_name_grp, ~"All"),
+#   #                     .groups = "drop")) %>% 
+#   # ungroup() 
 # 
-# write_parquet(equity_specsday, paste0(data_dir, "management_report/equity_specsday.parquet"))
+# write_parquet(spec_procphase, paste0(data_dir, "management_report/spec_procphase.parquet"))
 
-##### Mean number of surgeries per day of the week, monthly --------------------
-# equity_specsday <- ras_cand_data %>% # i don't think this is quite doing what I want it to
-#   filter(ras_proc == "RAS") %>%
-#   mutate(dow = factor(format(as.Date(main_op_date, format="%d/%m/%Y"),"%A"),
-#                       levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
-#                                  "Friday", "Saturday", "Sunday"))) %>%
-#   group_by(hospital_name, op_year, op_mth, main_op_date, dow, main_op_specialty) %>%
-#   summarise(n = n()) %>%
-#   ungroup() %>%
-#   tidyr::complete(hospital_name, op_year, op_mth, dow, main_op_specialty) %>% #need to get zeroes for the days when no surgery happened for that spec at that location
-#   mutate(n = replace_na(n, 0)) %>%
-#   group_by(hospital_name, op_year, op_mth, dow, main_op_specialty) %>% #, .drop = FALSE
-#   summarise(mean_procs_pd = round(mean(n), 2)) %>%
-#   ungroup()
-# 
-# write_parquet(util_procsday, paste0(data_dir, "management_report/util_procsday.parquet"))
 
 

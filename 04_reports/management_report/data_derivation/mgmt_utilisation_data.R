@@ -69,8 +69,12 @@ dates <- as.data.frame(seq(yr_start, yr_end, by = 1)) %>%
 
 # read in intuitive data
 int_data <- read_parquet(paste0(data_dir, "intuitive/intuitive_rolling_data.parquet")) %>% 
-  filter((start_date >= yr_start & start_date <= yr_end)) %>% # !hospital_name %in% new_hosps
-  mutate(hosp_device = paste0(hospital_name, " - ", system_serial_number)) %>% 
+  filter((start_date >= yr_start & start_date <= yr_end) &
+           system_serial_number != "SH2319") %>% # !hospital_name %in% new_hosps
+  mutate(hosp_device = paste0(hospital_name, " - ", system_serial_number),
+         hosp_device = replace_when(hosp_device,
+                                    hosp_device == "Queen Elizabeth University Hospital - SK4384" |
+                                      hosp_device == "Queen Elizabeth University Hospital - SK8933" ~ "Queen Elizabeth University Hospital - SK4384/SK8933")) %>% 
   group_by(start_date, hosp_device) %>% 
   summarise(n = n()) 
 

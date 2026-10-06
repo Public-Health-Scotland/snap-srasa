@@ -13,7 +13,7 @@ list.files("./03_clean_modify/", full.names = TRUE) %>%
   walk(source)
 
 ### extract smr01 data ---------------------------------------------------------
-df <- extract_smr01_data() %>% 
+extract_smr01_data() %>% 
   identify_ras_procs() %>%
   identify_oropharynx_diags() %>% 
   filter_extract() %>% 
