@@ -127,53 +127,36 @@ make_plot_spec_procsmth <- function(hospitals, spec_colours){
   return(plot_out)
 }
 
-make_plot_spec_procphase <- function(hospitals, specialty){ #this one needs specialty tabs
+make_plot_spec_appdiag <- function(hospitals, specialty){ #this one needs specialty tabs
   #"Number of procedures performed by RAS per month by procedure phase, by specialty ({start_date} - {latest_date})", (already in there)
-  
-  all_months <- spec_procphase$op_mth |> unique() |> sort()
-  
-  chart_data <- spec_procphase %>% 
-    filter(ras_proc == "RAS",
-           hospital_name_grp %in% hospitals,
-           main_op_specialty == specialty) %>%
-    complete(op_mth = all_months,
-             main_op_phase = c("phase1", "phase2", "other"),
-             hospital_name_grp = hospitals,
-             fill = list(n = 0)) %>% 
-    mutate(main_op_phase = factor(main_op_phase, 
-                                  levels = c("phase1", "phase2", "other"),
-                                  labels = c("Phase 1", "Phase 2", "Other")),
-           op_mth = as_date(op_mth))
-  
-  plot <- ggplot(chart_data, 
-                                aes(x = op_mth, y = n, fill = fct_rev(main_op_phase),
-                                    tooltip = paste0("Hospital Location: ", hospital_name_grp,
-                                                     "\n Procedure phase: ", main_op_phase,
-                                                     "\n No. RAS procedures: ", n,
-                                                     "\n Month: ", op_mth),
-                                    data_id = op_mth)) +
-    geom_bar_interactive(stat = "identity", width = 20, hover_nearest = TRUE) +
-    labs(x = "Month", 
-         y = "Total RAS procedures", 
-         fill = "Procedure phase",
-         caption = "Data from SMR01, RAS procedures only",
-         subtitle = paste0())+ 
-    scale_fill_manual(values = c("Other" = "#b1b1b1","Phase 1" = "#3F085C", "Phase 2" = "#3E8ECC")) + 
-    scale_y_continuous(
-      breaks = scales::breaks_width(5),
-    ) +
-    scale_x_date(
-      date_breaks = "1 month",
-      date_labels = "%b %Y"
-    ) +
-    expand_limits(y = 5) +
+
+   chart_data <- spec_appdiag %>%
+     mutate(cancer_binary = as.factor(cancer_binary),
+            cancer_binary = factor(cancer_binary, levels = c("Cancer", "Benign")),
+            ras_proc = as.factor(ras_proc),
+            ras_proc = factor(ras_proc, levels = c("RAS", "Non-RAS", "No procedures"))) %>% 
+    filter(hospital_name_grp %in% hospitals,
+           main_op_specialty  == specialty)
+
+  plot <- ggplot(chart_data, aes(x = cancer_binary, y = prop, fill = fct_rev(ras_proc),
+                                 tooltip = paste0("Hospital Location: ", hospital_name_grp,
+                                                  "\n No. procedures (year to date): ", n,
+                                                  "\n % of procedures: ", prop, "%",
+                                                  "\n ", ras_proc, ", ", cancer_binary),
+                                                  data_id = ras_proc))  +
+    geom_bar_interactive(stat = "identity", width = 0.6, hover_nearest = TRUE) +
+    labs(x = "Diagnosis",
+         y = "% procedures",
+         #fill = "Surgical approach",
+         caption = "Data from SMR01")+
+    scale_fill_manual(values = c("RAS" = "#3F085C", "Non-RAS" = "#3E8ECC", "No procedures" = "#b1b1b1")) +
     facet_wrap(~hospital_name_grp) +
     theme_phs_ylines() +
     theme(legend.position = 'bottom',
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
-  
+
   plot_out <- ggiraph_default(plot)
-  
+
   return(plot_out)
 }
 

@@ -71,22 +71,20 @@ report_ui <- page_navbar(
         
         #### procs by phase (per specialty)
         card(
-          card_header(str_glue("2.2 - Number of procedures performed by RAS monthly according to procedure prioritisation phase, by specialty ({date_string})")),
+          card_header(str_glue("2.2 - Proportion of RAS vs. Non-RAS procedures performed in patients with and without cancer diagnoses, by specialty ({date_string})")),
           do.call(navset_pill,
                   args = map(
-                    sort(unique(spec_procsmth$main_op_specialty)),
+                    sort(unique(spec_appdiag$main_op_specialty)),
                     ~ggiraph_nav(capitalise_first(.x),
-                                 make_plot_spec_procphase(hosps, .x)
+                                 make_plot_spec_appdiag(hosps, .x)
                     )
                   )
           ),
           card_body(
-            "Note: For detail on which prioritisation phase each procedure belongs to, see the supplementary file downloadable from the 'About SRASA' page.",
-            br(),
             "Note: All known candidate procedures are assigned to surgical specialty as per the supplementary file downloadable from the 'About SRASA' tab. Procedures performed by RAS that are not listed here have been assigned to the correct specialty where possible, but those that could not be satisfactorily matched are designated 'unlisted'.")
         )
-      )
-    ),    
+       )
+     ),    
     
     ### Page four - procedures
     nav_panel(

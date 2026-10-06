@@ -48,8 +48,10 @@ util_procsday <- read_parquet(paste0(mgmt_data_dir, "util_procsday.parquet")) #f
 
 spec_procsmth <- read_parquet(paste0(mgmt_data_dir, "spec_procsmth.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
-spec_procphase <- read_parquet(paste0(mgmt_data_dir, "spec_procphase.parquet")) |>
-  filter(op_mth < date_to, op_mth >= date_from)
+# spec_procphase <- read_parquet(paste0(mgmt_data_dir, "spec_procphase.parquet")) |>
+#   filter(op_mth < date_to, op_mth >= date_from)
+spec_appdiag <- read_parquet(paste0(mgmt_data_dir, "spec_appdiag.parquet")) |>
+  filter(main_op_specialty %in% c("Colorectal", "Gynaecology", "ENT", "Urology", "Thoracic"))
 
 proc_index <- read_parquet(paste0(mgmt_data_dir, "proc_index.parquet")) |>
   filter(op_mth < date_to, op_mth >= date_from)
