@@ -35,4 +35,4 @@ The functions for the project are saved in various folders depending on their pu
 
 ## Authors
 + Bex Madden
-+ Dylan Lewis
++ Dylan Lewis (has moved on)

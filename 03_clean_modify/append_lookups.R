@@ -5,7 +5,7 @@
 # Bex Madden & Dylan Lewis
 # 01/12/2025
 
-append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural", "hospital", "specialty", "admission_type")){
+append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural", "hospital", "specialty", "admission_type", "ethnic group")){
   
   #' Append lookup values to SRASA Monthly SMR01 extract according to inputs
   #'
@@ -89,6 +89,17 @@ append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural
     ras_lookup_data <- ras_lookup_data %>% 
       left_join(adm_type_lookup, by = join_by(admission_type == code)) %>% 
       relocate(adm_type_grp, .after = admission_type)
+  }
+  
+  if("ethnic group" %in% which_lookups | "all" %in% which_lookups){
+    cli_progress_step("Adding ethnic group information...")
+    
+    ethnic_grp_lookup <- read.csv(paste0(lookup_dir, "ethnic_grp_lookup.csv")) %>% 
+      select(code, ethnic_desc, ethnic_cat_desc) 
+    
+    ras_lookup_data <- ras_lookup_data %>% 
+      left_join(ethnic_grp_lookup, by = join_by(ethnic_group == code)) %>% 
+      relocate(ethnic_desc, ethnic_cat_desc, .after = ethnic_group)
   }
   
   return(ras_lookup_data)
