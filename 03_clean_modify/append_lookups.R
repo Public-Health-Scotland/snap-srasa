@@ -88,7 +88,10 @@ append_lookups <- function(df, which_lookups = c("all", "postcode", "urban_rural
     
     ras_lookup_data <- ras_lookup_data %>% 
       left_join(adm_type_lookup, by = join_by(admission_type == code)) %>% 
-      relocate(adm_type_grp, .after = admission_type)
+      group_by(link_no, cis_marker) %>% 
+      mutate(first_adm_type = first(adm_type_grp)) %>% 
+      ungroup() %>% 
+      relocate(adm_type_grp, first_adm_type, .after = admission_type)
   }
   
   if("ethnic group" %in% which_lookups | "all" %in% which_lookups){
