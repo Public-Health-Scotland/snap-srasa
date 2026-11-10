@@ -131,6 +131,7 @@ conflict_prefer('yday', 'lubridate')
 
 # Function
 list.files(c("./02_setup",
+             "./03_clean_modify",
              "./05_utilities"),
            pattern = "*.[rR]",
            full.names = TRUE) %>% 

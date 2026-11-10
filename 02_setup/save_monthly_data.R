@@ -22,6 +22,7 @@ save_monthly_data <- function(df){
                        format(Sys.Date(), "%Y-%m"), ".parquet")) %>% 
 
   filter(!is.na(main_op_code)) %>% #one row per procedure
+  distinct(upi_number, cis_marker, all_ops, op1_date, .keep_all = TRUE) %>% # remove duplicate rows with same info
   select(date_record_inserted:ras_proc, main_op_code:cancer_surgery) %>%  #only keep data columns required for majority of processes
   
     write_parquet(paste0(data_dir, "monthly_extract/srasa_smr_extract_min.parquet"))
